@@ -12,13 +12,13 @@
 </template>
 
 <script lang="ts" setup>
-import type {Model} from "~/components/micropost/model";
+import type { Model } from "~/components/micropost/model";
 
 type Props = {
-    model: Model
-  }
+  model: Model
+}
 
-  const props = defineProps<Props>()
+const props = defineProps<Props>()
 
 
 </script>

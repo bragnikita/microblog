@@ -1,4 +1,4 @@
-import {MicroPost} from "~/server/storage/db";
+import {MicroPost} from "~/server/services/db";
 
 export default defineEventHandler(async (event) => {
     const list = await MicroPost.query.primary({}).go({ ignoreOwnership: true })

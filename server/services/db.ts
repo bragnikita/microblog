@@ -7,6 +7,7 @@ import {DateTime} from "luxon";
 export const db = DynamoDBDocumentClient.from(new DynamoDBClient({}))
 export const TableName = Resource.database.name
 
+
 export const MicroPost = new Entity({
     model: {
         entity: 'micropost',
@@ -20,7 +21,7 @@ export const MicroPost = new Entity({
         },
         timestamp: {
             type: 'string',
-            required: true,
+            required: true,            
         },
         text: {
             type: 'string'
@@ -59,6 +60,19 @@ export const MicroPost = new Entity({
                 composite: ['timestamp'],
                 template: "${timestamp}",
                 casing: 'none'
+            }
+        },
+        gs1: {
+            index: 'gs1',
+            pk: {
+                field: 'gs1pk',
+                composite: ['id'],
+                template: 'micropost#${id}'
+            },
+            sk: {
+                field: 'gs1sk',
+                composite: [],
+                template: 'default'
             }
         }
     }

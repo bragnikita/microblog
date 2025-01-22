@@ -1,17 +1,34 @@
-import {Counters, MicroPost} from "~/server/storage/db";
-import {DateTime} from "luxon";
+import { DateTime } from "luxon";
+import { z } from "zod";
+import { Counters, MicroPost } from "~/server/services/db";
+import { defineWrappedResponseHandler } from "~/server/utils/error-handler";
+// import { formatToUTC } from "../../utils/dateTimeFormatter"
 
-export default defineEventHandler(async (event) => {
-    const body = await readBody(event)
-    const { data: nextCounters } = await Counters.update({ }).add({ microposts: 1 }).go({ response: "all_new"})
+
+const PostValidator = z.object({
+    text: z.string().nonempty().optional(),
+    images: z.array(z.object({
+        thumbnailUrl: z.string().url(),
+    })).optional(),
+    video: z.object({
+        youtubeId: z.string().nonempty(),
+    }).optional(),
+}
+).refine(data => data.text || (data.images && data.images.length > 0) || data.video, { message: 'At least one of text, images or video must be provided' });
+
+export default defineWrappedResponseHandler(async (event) => {
+    const body = PostValidator.parse(await readBody(event))
+    console.log(body)
+    const { data: nextCounters } = await Counters.update({}).add({ microposts: 1 }).go({ response: "all_new" });
     const post = await MicroPost.create({
         id: nextCounters.microposts!,
-        timestamp: DateTime.now().toUTC().toISO({ suppressMilliseconds: true }),
+        timestamp: DateTime.utc().toISO({suppressMilliseconds: true}),
         text: body.text,
-        images: [],
-    }).go()
+        images: body.images,
+        video: body.video,
+    }).go();
 
     return {
-        item: post,
-    }
-})
+        item: post.data,
+    };
+});
