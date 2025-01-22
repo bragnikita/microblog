@@ -14,6 +14,11 @@ export default $config({
     };
   },
   async run() {
+    $transform(sst.aws.Function, (args, opts, name) => {
+      args.nodejs = {
+        install: ['sharp', '@aws-sdk/signature-v4-crt', '@aws-sdk/crc64-nvme-crt'],
+      }
+    })
     const database = new sst.aws.Dynamo('database', {
       fields: {
         pk: 'string',
@@ -35,6 +40,18 @@ export default $config({
     })
     const content = new sst.aws.Bucket('content', {
       access: "cloudfront",
+    })
+    const resourceProcessor = new sst.aws.Function("resource-processor", {
+      handler: "server/functions/image-processor.handler",
+      link: [database, content],
+    })
+    content.notify({
+      notifications: [{
+        name: 'Resizer',
+        function: resourceProcessor.arn,
+        filterPrefix: 'content/original/',
+        events: ['s3:ObjectCreated:*']
+      }]
     })
     const cdn = new sst.aws.Router("main", {
       routes: {

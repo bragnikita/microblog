@@ -21,6 +21,7 @@
     "electrodb": "^3.0.1",
     "luxon": "^3.5.0",
     "nuxt": "^3.15.2",
+    "sharp": "^0.33.5",
     "sst": "3.5.15",
     "vue": "latest",
     "vue-router": "latest",
@@ -34,7 +35,9 @@
     "@element-plus/nuxt": "^1.1.1",
     "@nuxt/kit": "^3.15.2",
     "@nuxtjs/tailwindcss": "^6.13.1",
+    "@types/aws-lambda": "^8.10.147",
     "@types/luxon": "^3.4.2",
+    "@types/node": "^22.10.7",
     "sass-embedded": "^1.83.4",
     "tailwindcss": "^3.4.17"
   }

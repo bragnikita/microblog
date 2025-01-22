@@ -6,7 +6,7 @@ import { DateTime } from "luxon";
 const s3 = new S3Client();
 
 export async function getMicroblogContentUploadUrl(originalFileName: string) {
-    const key = `content/${DateTime.utc().toISO({ suppressMilliseconds: true })}-${originalFileName}`;
+    const key = `contents/original/${DateTime.utc().toISO({ suppressMilliseconds: true })}-${originalFileName}`;
     const params = new PutObjectCommand({
         Bucket: Resource.content.name,
         Key: key,
