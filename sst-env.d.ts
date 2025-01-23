@@ -17,6 +17,10 @@ declare module "sst" {
       "type": "sst.aws.Router"
       "url": string
     }
+    "resource-processor": {
+      "name": string
+      "type": "sst.aws.Function"
+    }
     "web": {
       "type": "sst.aws.Nuxt"
       "url": string

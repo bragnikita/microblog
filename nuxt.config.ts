@@ -17,11 +17,4 @@ export default defineNuxtConfig({
         preset: 'aws-lambda'
     },
     modules: ["@element-plus/nuxt", "@nuxtjs/tailwindcss"],
-    typescript: {
-        tsConfig: {
-            compilerOptions: {
-                esModuleInterop: true,
-            },
-        }
-    }    
 })

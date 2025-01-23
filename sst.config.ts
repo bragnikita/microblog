@@ -1,5 +1,7 @@
 /// <reference path="./.sst/platform/config.d.ts" />
 
+import { CONTENT_ORIGINAL_PREFIX, CONTENT_URL_PREFIX } from "./shared/constants";
+
 export default $config({
   app(input) {
     return {
@@ -14,11 +16,6 @@ export default $config({
     };
   },
   async run() {
-    $transform(sst.aws.Function, (args, opts, name) => {
-      args.nodejs = {
-        install: ['sharp', '@aws-sdk/signature-v4-crt', '@aws-sdk/crc64-nvme-crt'],
-      }
-    })
     const database = new sst.aws.Dynamo('database', {
       fields: {
         pk: 'string',
@@ -44,24 +41,35 @@ export default $config({
     const resourceProcessor = new sst.aws.Function("resource-processor", {
       handler: "server/functions/image-processor.handler",
       link: [database, content],
+      nodejs: {
+        install: ['sharp']
+      }
     })
     content.notify({
       notifications: [{
         name: 'Resizer',
         function: resourceProcessor.arn,
-        filterPrefix: 'content/original/',
+        filterPrefix: CONTENT_ORIGINAL_PREFIX,
         events: ['s3:ObjectCreated:*']
       }]
     })
+    const prefix = `/${CONTENT_URL_PREFIX}*`
     const cdn = new sst.aws.Router("main", {
       routes: {
-        "/content/*": {
+        [prefix]: {
           bucket: content,
         }
       }
     })
-    new sst.aws.Nuxt("web", {
+    const site = new sst.aws.Nuxt("web", {
       link: [database, content, cdn],
     });
+
+    return {
+      processor: resourceProcessor.name,
+      content: content.name,
+      cdn: cdn.url,
+      web: site.url,
+    }
   },
 });
