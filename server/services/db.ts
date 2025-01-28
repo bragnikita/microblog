@@ -53,7 +53,6 @@ export const MicroPost = new Entity({
             pk: {
                 field: 'pk',
                 composite: [],
-
                 template: 'micropost'
             },
             sk: {
@@ -63,15 +62,15 @@ export const MicroPost = new Entity({
                 casing: 'none'
             }
         },
-        gs1: {
-            index: 'gs1',
+        gsi1: {
+            index: 'gsi1',
             pk: {
-                field: 'gs1pk',
+                field: 'gsi1pk',
                 composite: ['id'],
                 template: 'micropost#${id}'
             },
             sk: {
-                field: 'gs1sk',
+                field: 'gsi1sk',
                 composite: [],
                 template: 'default'
             }

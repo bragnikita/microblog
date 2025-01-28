@@ -16,8 +16,10 @@ import { NuxtLink } from '#components';
         <img src="/top-image.jpg" class="h-full w-full object-cover object-center "/>
     </div>
     <div class="grow mx-auto w-full md:w-[600px] relative">
-      <div class="absolute top-[-50px] right-0 left-0 bottom-0 shadow-md bg-white md:rounded-md">
-        <slot/>
+      <div class="absolute top-0 md:top-[-50px] right-0 left-0 bottom-0">
+        <div class="shadow-md bg-white md:rounded-md">
+          <slot/>
+        </div>
       </div>
     </div>
   </div>

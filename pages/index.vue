@@ -9,7 +9,8 @@
     <div v-else class="grow flex flex-col gap-2 p-1">
     <div v-for="item in list" :key="item.id">
       <MicroPost :model="item"/>      
-      <el-button :icon="EditPen" circle />
+      <el-button :icon="EditPen" circle 
+      @click="() => navigateTo({name: 'id-edit', params: { id: item.id }})"/>
       <el-button :icon="Delete" circle />
     </div>
     </div>

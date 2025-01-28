@@ -17,7 +17,6 @@ const props = defineProps<{
 
 const { stop } = useIntersectionObserver(player, ([entry], observer) => {
     if (entry.isIntersecting) {
-        console.log('Intersecting video', props.id)
         isVisible.value = true;
         stop()
     }
