@@ -16,5 +16,5 @@ export default defineNuxtConfig({
     nitro: {
         preset: 'aws-lambda'
     },
-    modules: ["@element-plus/nuxt", "@nuxtjs/tailwindcss"],
+    modules: ["@element-plus/nuxt", "@nuxtjs/tailwindcss", '@vueuse/nuxt'],
 })

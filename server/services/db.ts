@@ -32,7 +32,7 @@ export const MicroPost = new Entity({
             items: {
                 type: 'map',
                 properties: {
-                    thumbnailUrl: {
+                    key: {
                         type: 'string',
                         required: true,
                     }

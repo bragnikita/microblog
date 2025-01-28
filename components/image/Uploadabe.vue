@@ -39,27 +39,18 @@ const isProcess = computed(() => state.progress > 0 && state.progress < 100);
 
 const doUpload = async () => {
     const { url, headers, id, thumbnailUrl } = await props.getUploadParams(props.file);
-    console.log(url, headers);
     state.isFailure = false
     state.progress = 50
 
-    // mock
-    // await new Promise(resolve => setTimeout(resolve, 2000));
-    // state.progress = 100;
-    // emits('uploaded');
-
     $fetch(url, {
         method: 'PUT',
-        headers: {
-            ...headers,
-            // 'Content-Disposition': `attachment; filename="${encodeURIComponent(props.file.name)}"`,
-        },
+        headers,
         body: props.file,
     }).then(() => {
         state.progress = 100;
-        emits('uploaded', id, thumbnailUrl );
+        emits('uploaded', id, thumbnailUrl);
     }).catch(e => {
-        console.log(e)
+        console.log('ImageUploadable#doUpload:', e)
         state.progress = 0;
         state.isFailure = true;
     });
@@ -80,6 +71,11 @@ onMounted(async () => {
     });
     if (props.auto) {
         await doUpload();
+    }
+})
+onUnmounted(() => {
+    if (state.previewUrl) {
+        URL.revokeObjectURL(state.previewUrl);
     }
 })
 </script>

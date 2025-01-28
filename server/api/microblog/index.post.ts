@@ -8,7 +8,7 @@ import { defineWrappedResponseHandler } from "~/server/utils/error-handler";
 const PostValidator = z.object({
     text: z.string().nonempty().optional(),
     images: z.array(z.object({
-        thumbnailUrl: z.string().url(),
+        key: z.string().nonempty(),
     })).optional(),
     video: z.object({
         youtubeId: z.string().nonempty(),
@@ -18,7 +18,6 @@ const PostValidator = z.object({
 
 export default defineWrappedResponseHandler(async (event) => {
     const body = PostValidator.parse(await readBody(event))
-    console.log(body)
     const { data: nextCounters } = await Counters.update({}).add({ microposts: 1 }).go({ response: "all_new" });
     const post = await MicroPost.create({
         id: nextCounters.microposts!,

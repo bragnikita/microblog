@@ -8,8 +8,7 @@
     </div>
     <div v-else class="grow flex flex-col gap-2 p-1">
     <div v-for="item in list" :key="item.id">
-      <MicroPost :model="item"/>
-      
+      <MicroPost :model="item"/>      
       <el-button :icon="EditPen" circle />
       <el-button :icon="Delete" circle />
     </div>
@@ -26,12 +25,6 @@ import { NuxtLink } from "#components";
 const {data, refresh} = await useFetch('/api/microblog')
 
 const list = computed(() => data.value?.list?.map(v => {
-  return {
-    text: v.text || '',
-    timestamp: v.timestamp,
-    images: [],
-    video: undefined,
-    id: v.id,
-  } satisfies Model
+  return v satisfies Model
 }) || [])
 </script>
