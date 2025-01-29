@@ -2,7 +2,7 @@ import { MicroPost } from "~/server/services/db";
 import { ImageResources } from "~/server/services/s3";
 
 export default defineEventHandler(async (event) => {
-    const list = await MicroPost.query.primary({}).go({ ignoreOwnership: true })
+    const list = await MicroPost.query.primary({}).go({ ignoreOwnership: true, order: 'desc' })
     return {
         list: list.data.map(v => {
             return {

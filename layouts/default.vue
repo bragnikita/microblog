@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { NuxtLink } from '#components';
+import {SwitchButton} from "@element-plus/icons-vue";
 
+const { clear, loggedIn } = useUserSession();
+async function logout() {
+  await clear();
+  await navigateTo('/')
+}
 </script>
 
 <template>
@@ -12,6 +18,9 @@ import { NuxtLink } from '#components';
           <div class='text-5xl md:text-7xl'>Haji<br/>の</div>
           <div class='text-4xl md:text-7xl'>旅<br/>旅</div>
         </NuxtLink>
+      </div>
+      <div class="absolute top-1 right-1" v-if="loggedIn">
+        <el-button circle :icon="SwitchButton" @click="logout" size="large" type="danger"/>
       </div>
         <img src="/top-image.jpg" class="h-full w-full object-cover object-center "/>
     </div>

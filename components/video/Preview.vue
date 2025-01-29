@@ -1,6 +1,6 @@
 <template>
     <div ref="player" class="min-h-[1px] min-w-[1px]">
-        <lite-yt-embed :id="id" title="" v-if="isVisible" />
+        <lite-yt-embed :id="id" title="" v-if="isVisible"/>
     </div>
 </template>
 
