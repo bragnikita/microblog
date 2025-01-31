@@ -15,6 +15,9 @@
 <script lang="ts" setup>
 import type { ImageUploaderModelItem } from '~/components/image/model';
 
+definePageMeta({
+    middleware: ['authenticated']
+})
 
 const model = reactive<{
     text: string,

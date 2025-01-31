@@ -4,7 +4,7 @@
       <div class="text-sm font-semibold text-gray-400">
         {{ daytimes.micropost(model.timestamp) }}
       </div>
-      <div>
+      <div class="flex items-center">
         <slot name="actions"/>
       </div>
     </div>

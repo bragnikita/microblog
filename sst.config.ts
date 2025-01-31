@@ -2,6 +2,8 @@
 
 import { CONTENT_ORIGINAL_PREFIX, CONTENT_URL_PREFIX } from "./shared/constants";
 
+const APP_DOMAIN = process.env.APP_DOMAIN
+
 export default $config({
   app(input) {
     return {
@@ -36,7 +38,7 @@ export default $config({
       ttl: 'expireAt',
     })
     const content = new sst.aws.Bucket('content', {
-      access: "cloudfront",
+      access: "cloudfront",      
     })
     const resourceProcessor = new sst.aws.Function("resource-processor", {
       handler: "server/functions/image-processor.handler",
@@ -55,6 +57,7 @@ export default $config({
     })
     const prefix = `/${CONTENT_URL_PREFIX}*`
     const cdn = new sst.aws.Router("main", {
+      domain: APP_DOMAIN ? 'cdn.' + APP_DOMAIN : undefined,
       routes: {
         [prefix]: {
           bucket: content,
@@ -63,6 +66,11 @@ export default $config({
     })
     const site = new sst.aws.Nuxt("web", {
       link: [database, content, cdn],
+      domain: APP_DOMAIN,
+      environment: {
+        FAST_ACCESSS_KEY: process.env.FAST_ACCESSS_KEY || '',
+        NUXT_SESSION_PASSWORD: process.env.NUXT_SESSION_PASSWORD || '',
+      }
     });
 
     return {

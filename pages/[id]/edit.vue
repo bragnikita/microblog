@@ -9,6 +9,11 @@
 </template>
 
 <script lang="ts" setup>
+
+definePageMeta({
+    middleware: ['authenticated']
+})
+
 import type { ImageUploaderModelItem } from '~/components/image/model';
 const route = useRoute();
 const router = useRouter();

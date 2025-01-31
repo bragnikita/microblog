@@ -10,9 +10,12 @@
     <div v-else class="grow flex flex-col gap-2 p-1">
       <div v-for="item in list" :key="item.id">
         <MicroPost :model="item">
-          <template #actions v-if="loggedIn">
-            <el-button :icon="EditPen" circle @click="() => navigateTo({ name: 'id-edit', params: { id: item.id } })" />
-            <micropost-delete-btn :id="item.id" @deleted="refresh" />
+          <template #actions >
+            <el-icon color="#9ca3af" class="cursor-pointer" @click="() => navigateTo({ name: 'id', params: { id: item.id } })"><Eye /></el-icon>
+            <div v-if="loggedIn">
+              <el-button :icon="EditPen" circle @click="() => navigateTo({ name: 'id-edit', params: { id: item.id } })" />
+              <micropost-delete-btn :id="item.id" @deleted="refresh" />
+            </div>
           </template>
         </MicroPost>
       </div>
@@ -21,7 +24,7 @@
 </template>
 
 <script lang="ts" setup>
-import { Plus, EditPen, Delete } from "@element-plus/icons-vue";
+import { Plus, EditPen, Delete, View as Eye } from "@element-plus/icons-vue";
 import MicroPost from "~/components/micropost/MicroPost.vue";
 import type { Model } from "~/components/micropost/model";
 import { NuxtLink } from "#components";
@@ -32,4 +35,5 @@ const { data, refresh } = await useFetch('/api/microblog')
 const list = computed(() => data.value?.list?.map(v => {
   return v satisfies Model
 }) || [])
+
 </script>

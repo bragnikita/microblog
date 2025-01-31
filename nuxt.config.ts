@@ -9,6 +9,19 @@ export default defineNuxtConfig({
             enabled: true,
         },
     },
+    runtimeConfig: {
+        public: {
+            baseUrl: process.env.BASE_URL || 'http://localhost:3000',
+        }
+    },
+
+    app: {
+        head: {
+            title: 'Haji no Tabi',
+            charset: 'utf-8',
+            viewport: 'width=device-width, initial-scale=1',
+        }
+    },
 
     experimental: {
         watcher: "parcel",
@@ -17,9 +30,9 @@ export default defineNuxtConfig({
         preset: 'aws-lambda'
     },
     modules: [
-      "@element-plus/nuxt",
-      "@nuxtjs/tailwindcss",
-      '@vueuse/nuxt',
-      "nuxt-auth-utils",
+        "@element-plus/nuxt",
+        "@nuxtjs/tailwindcss",
+        '@vueuse/nuxt',
+        "nuxt-auth-utils",
     ],
 })

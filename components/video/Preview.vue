@@ -6,6 +6,7 @@
 
 <script lang="ts" setup>
 import LiteYtEmbed from 'vue-lite-youtube-embed'
+import 'vue-lite-youtube-embed/style.css'
 import { useIntersectionObserver } from '@vueuse/core'
 
 const player = ref(undefined)
