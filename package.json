@@ -24,6 +24,7 @@
     "sharp": "^0.33.5",
     "sst": "3.5.15",
     "vue": "latest",
+    "vue-easy-lightbox": "^1.19.0",
     "vue-lite-youtube-embed": "^1.2.4",
     "vue-router": "latest",
     "zod": "^3.24.1"
@@ -42,6 +43,7 @@
     "@vueuse/core": "^12.5.0",
     "@vueuse/nuxt": "12.5.0",
     "nuxt-auth-utils": "^0.5.10",
+    "nuxt-lodash": "^2.5.3",
     "sass-embedded": "^1.83.4",
     "tailwindcss": "^3.4.17"
   }

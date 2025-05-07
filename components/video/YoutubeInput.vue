@@ -1,7 +1,7 @@
 <template>
     <el-space direction="vertical" fill>
-        <el-button v-if="model" @click="onRemove">Remove</el-button>
-        <el-input v-else name="youtubeVideoUrl" type="text" v-model="url" class="w-full" ref="inputRef" />
+        <el-button v-if="model" @click="onRemove" type="warning" plain>Remove</el-button>
+        <el-button v-else @click="onPasteUrl" type="primary" plain>Paste Youtube URL</el-button>
         <lite-yt-embed :id="model" v-if="model" ref="playerRef" title="" />
     </el-space>
 </template>
@@ -15,9 +15,25 @@ const inputRef = ref<HTMLInputElement | undefined>(undefined)
 const url = ref('')
 
 watch(url, (url) => {
+    if (!url) {
+        return;
+    }
     const id = extractId(url)
+    if (!id) {
+        console.warn('Not Youtube URL. Clipboard content: ', url)
+        ElMessage.warning('Invalid Youtube URL')
+        return
+    }
     model.value = id || ''
 })
+
+function onPasteUrl() {
+    navigator.clipboard.readText().then((text) => {
+        url.value = text;
+    }).catch((err) => {
+        ElMessage.error('Failed to read clipboard contents: ' + err);
+    });
+}
 
 function onRemove() {
     url.value = ''

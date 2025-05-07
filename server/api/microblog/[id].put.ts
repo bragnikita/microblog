@@ -3,6 +3,7 @@ import { Counters, MicroPost } from "~/server/services/db";
 
 const PostValidator = z.object({
     text: z.string().nonempty().optional(),
+    title: z.string().optional(),
     images: z.array(z.object({
         key: z.string().nonempty(),
     })).optional(),
@@ -21,6 +22,7 @@ export default defineEventHandler(async (event) => {
     }
     const post = await MicroPost.update({ timestamp: original.data[0].timestamp }).set({
         text: body.text,
+        title: body.title,
         images: body.images,
         video: body.video,
     }).go({ response: 'all_new'});

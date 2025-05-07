@@ -27,6 +27,9 @@ export const MicroPost = new Entity({
         text: {
             type: 'string'
         },
+        title: {
+            type: 'string'
+        },
         images: {
             type: 'list',
             items: {

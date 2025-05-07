@@ -1,12 +1,13 @@
 <template>
-    <div class="border-2 border-gray-200 shadow-md h-[100px] w-[100px] flex justify-center items-center" v-loading="isProcessing">
+    <div class="border-2 border-gray-200 shadow-md h-[100px] min-w-[100px] flex justify-center items-center" v-loading="isProcessing"
+        :style="{ width: props.width || (100 + 'px')}">
         <div v-if="isFailure" class="z-10 flex h-full w-full justify-center items-center bg-white bg-opacity-50"> 
             <LazyElIconWarning class="h-[50px] text-red-500 cursor-pointer" @click="onRemoved"/>
         </div>
         <image-uploadabe :file="file" :getUploadParams="getUploadParams" v-else-if="file" @removed="file = undefined"
-            @uploaded="onUploaded" />
+            @uploaded="onUploaded" auto/>
         <image-preview class="h-full w-full" :thumbnailUrl="props.thumbnailUrl" v-else-if="props.thumbnailUrl"
-            @removed="onRemoved" />
+            @removed="onRemoved" auto/>
         <a class="h-full w-full  flex justify-center items-center" href="#" v-else-if="!props.thumbnailUrl && !file"
             @click="onOpenDialod">
             <input type="file" ref="upload" @change="onFileSelect" class="hidden" accept="image/*" :max="1" />
@@ -22,6 +23,7 @@ import { LazyElIconWarning } from '#components';
 const props = defineProps<{
     thumbnailUrl?: string,
     id?: string,
+    width?: string
 }>()
 
 const file = ref<File>();
@@ -29,6 +31,7 @@ const upload = ref<HTMLInputElement>()
 const isFailure = ref(false)
 const isProcessing = ref(false)
 const emits = defineEmits<{
+    (event: 'processing', isProcessing: boolean): void,
     (event: 'uploaded', id: string, thumbnailUrl: string): void,
     (event: 'removed'): void,
 }>();
@@ -95,5 +98,9 @@ async function waitForUploadFinished(id: string) {
         }
     }, 2000)
 }
+
+watch(isProcessing, (value) => {
+    emits('processing', value)
+})
 
 </script>

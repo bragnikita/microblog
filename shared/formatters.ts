@@ -1,4 +1,5 @@
 import { DateTime } from 'luxon'
+
 function toDateTime(time: string | number) {
     if (typeof time === 'string') {
         return DateTime.fromISO(time)

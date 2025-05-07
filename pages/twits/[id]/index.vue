@@ -12,7 +12,11 @@ useSeoMeta({
 </script>
 
 <template>
-    <div class="px-1 pt-2 pb-1">
+    <div class="px-1 pt-2 pb-2 flex flex-col gap-2">
         <MicroPost :model="data" v-if="data" />
+        <div class="grid grid-cols-2">
+            <el-button @click="navigateTo({name: 'twits'})" plain type="primary">To list</el-button>
+            <el-button @click="navigateTo({name: 'twits-id-edit', params: { id: route.params.id }})" plain type="warning">Edit</el-button>
+        </div>
     </div>
 </template>

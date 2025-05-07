@@ -30,9 +30,10 @@ export default defineNuxtConfig({
         preset: 'aws-lambda'
     },
     modules: [
-        "@element-plus/nuxt",
-        "@nuxtjs/tailwindcss",
-        '@vueuse/nuxt',
-        "nuxt-auth-utils",
+      "@element-plus/nuxt",
+      "@nuxtjs/tailwindcss",
+      '@vueuse/nuxt',
+      "nuxt-auth-utils",
+      'nuxt-lodash',
     ],
 })

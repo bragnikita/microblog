@@ -6,7 +6,7 @@
     @confirm="onConfirm"
   >
     <template #reference>
-      <el-button :icon="Delete" circle type="danger" />
+      <el-button :icon="Delete" type="danger" class="w-full" />
     </template>
   </el-popconfirm>
 </template>

@@ -106,12 +106,14 @@ async function compressAndUpload(sourceBucket: string, originalKey: string, key:
     const originalImageBytes = await originalImage.Body.transformToByteArray();
     const sharpImage = sharp(originalImageBytes);
 
-    const { width, height, size } = await sharpImage.metadata();
+    const { width, height, size, orientation } = await sharpImage.metadata();
     if (!width || !height || !size) { throw new Error('Could not read image metadata'); }
 
-    const evaluationResult = evaluateImageMeta({ width, height, size });
+    const evaluationResult = shoudBeCompressed({ width, height, size });
     if (evaluationResult) {
-        const resizedImage = await sharpImage.resize(evaluationResult.width, evaluationResult.height).toFormat('jpeg').jpeg({ quality: 60, force: true }).toBuffer();
+        const resizedImage = await sharpImage.keepExif()
+        .resize({fit: 'inside'}, IMAGE_COMPRESSION_SIDE_THRESHOLD).toFormat('jpeg').jpeg({ quality: 60, force: true })
+        .toBuffer();
 
         await s3Client.send(new PutObjectCommand({
             Bucket: sourceBucket,
@@ -139,24 +141,25 @@ type ImageMeta = {
     size: number;
 };
 
-function evaluateImageMeta({ width, height, size }: ImageMeta): Omit<ImageMeta, 'size'> | undefined {
+function shoudBeCompressed({ width, height, size }: ImageMeta) {
     if (
         width > IMAGE_COMPRESSION_SIDE_THRESHOLD ||
         height > IMAGE_COMPRESSION_SIDE_THRESHOLD ||
         size > IMAGE_COMPRESSION_SIZE_THRESHOLD
     ) {
-        if (width >= height) {
-            return {
-                width: IMAGE_COMPRESSION_SIDE_THRESHOLD,
-                height: Math.ceil(IMAGE_COMPRESSION_SIDE_THRESHOLD / (width / height)),
-            };
-        } else {
-            return {
-                width: Math.ceil(IMAGE_COMPRESSION_SIDE_THRESHOLD / (height / width)),
-                height: IMAGE_COMPRESSION_SIDE_THRESHOLD,
-            };
-        }
+        return true
+        // if (width >= height) {
+        //     return {
+        //         width: IMAGE_COMPRESSION_SIDE_THRESHOLD,
+        //         height: Math.ceil(IMAGE_COMPRESSION_SIDE_THRESHOLD / (width / height)),
+        //     };
+        // } else {
+        //     return {
+        //         width: Math.ceil(IMAGE_COMPRESSION_SIDE_THRESHOLD / (height / width)),
+        //         height: IMAGE_COMPRESSION_SIDE_THRESHOLD,
+        //     };
+        // }
     }
 
-    return undefined;
+    return false;
 }

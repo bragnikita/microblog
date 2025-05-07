@@ -7,6 +7,7 @@ import { defineWrappedResponseHandler } from "~/server/utils/error-handler";
 
 const PostValidator = z.object({
     text: z.string().nonempty().optional(),
+    title: z.string().optional(),
     images: z.array(z.object({
         key: z.string().nonempty(),
     })).optional(),
@@ -23,6 +24,7 @@ export default defineWrappedResponseHandler(async (event) => {
         id: nextCounters.microposts!,
         timestamp: DateTime.utc().toISO({suppressMilliseconds: true}),
         text: body.text,
+        title: body.title,
         images: body.images,
         video: body.video,
     }).go();

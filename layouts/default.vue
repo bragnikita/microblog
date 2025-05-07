@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { NuxtLink } from '#components';
-import { SwitchButton } from "@element-plus/icons-vue";
+import { Menu, SwitchButton } from "@element-plus/icons-vue";
+import { isDevMode } from '~/shared/utils';
 
 const title = 'Haji no Tabi';
 const description = 'Yet another personal microblog from one odd guy from Japan.';
@@ -19,6 +20,8 @@ async function logout() {
   await clear();
   await navigateTo('/')
 }
+
+const mainMenu = ref(false);
 </script>
 
 <template>
@@ -38,9 +41,30 @@ async function logout() {
     <div class="grow mx-auto w-full md:w-[600px] relative">
       <div class="absolute top-0 md:top-[-50px] right-0 left-0 bottom-0">
         <div class="shadow-md bg-white md:rounded-md  min-h-[200px]">
+            <div v-if="isDevMode()" class="flex justify-start items-center gap-2 p-2">
+            <el-button type="default" plain :icon="Menu" @click="() => {mainMenu = true}"/>
+            <el-divider direction="vertical" />
+            <NuxtLink to="/blog" class="text-lg font-semibold text-gray-700" active-class="underline">
+              Блог
+            </NuxtLink>
+            <el-divider direction="vertical" />
+            <NuxtLink to="/twits" class="text-lg font-semibold text-gray-700" active-class="underline">
+              Поток мыслей
+            </NuxtLink>
+            </div>
           <slot />
         </div>
       </div>
     </div>
+    <el-drawer direction="ltr"
+      v-model="mainMenu"
+      :close-on-click-modal="true"
+      :close-on-press-escape="true"
+      :show-close="true"
+      >
+      <template #default>
+        Menu
+      </template>
+      </el-drawer>
   </div>
 </template>

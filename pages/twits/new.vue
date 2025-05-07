@@ -1,13 +1,13 @@
 <template>
     <MicropostEditForm
-    title="New Micropost"
+        v-model:title="model.title"
         v-model:text="model.text"
         v-model:video-id="model.ytVideoId"
         v-model:images="model.images"
     >
     <div class="flex w-full justify-center gap-1">
-        <el-button type="primary" @click="() => submit.execute()">Submit</el-button>
-        <el-button type="default" @click="">Return</el-button>
+        <el-button type="success" @click="() => submit.execute()" class="grow">Create</el-button>
+        <el-button type="danger" @click="navigateTo('/twits')">Return</el-button>
     </div>
 </MicropostEditForm>
 </template>
@@ -20,10 +20,12 @@ definePageMeta({
 })
 
 const model = reactive<{
+    title: string,
     text: string,
     ytVideoId: string,
     images: (ImageUploaderModelItem | undefined)[]
 }>({
+    title: '',
     text: '',
     ytVideoId: '',
     images: []
@@ -31,7 +33,8 @@ const model = reactive<{
 
 const payload = computed(() => ({
     text: model.text,
-    imagdes: model.images.filter(v => !!v).map(v => ({ key: v!.key })),
+    title: model.title,
+    images: model.images.filter(v => !!v).map(v => ({ key: v!.key })),
     video: model.ytVideoId ? { youtubeId: model.ytVideoId } : undefined,
 }));
 
@@ -41,7 +44,7 @@ const submit = useFetch('/api/microblog', {
     watch: false,
     immediate: false,
     onResponse: () => {
-        navigateTo('/');        
+        navigateTo('/twits');        
     }
 });
 </script>
