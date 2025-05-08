@@ -8,11 +8,11 @@ export default $config({
   app(input) {
     return {
       name: "blog",
-      removal: input?.stage === "production" ? "retain" : "remove",
+      removal: input?.stage === "prod" ? "retain" : "remove",
       home: "aws",
       providers: {
-        aws: {
-          profile: 'private'
+        aws: {          
+          profile: process.env.CI ? undefined : 'private'
         }
       }
     };
