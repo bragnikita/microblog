@@ -48,7 +48,7 @@ const mainMenu = ref(false);
               Блог
             </NuxtLink>
             <el-divider direction="vertical" />
-            <NuxtLink to="/twits" class="text-lg font-semibold text-gray-700" active-class="underline">
+            <NuxtLink to="/microblog" class="text-lg font-semibold text-gray-700" active-class="underline">
               Поток мыслей
             </NuxtLink>
             </div>

@@ -1,9 +1,10 @@
 <template>
-    <MicropostEditForm title="Edit Micropost" v-model:text="model.text" v-model:video-id="model.ytVideoId"
+    <MicropostEditForm v-model:text="model.text" v-model:video-id="model.ytVideoId"
         v-model:images="model.images" @ready="v => isFormReady = v" v-model:title="model.title">
+        <el-divider></el-divider>
         <div class="flex w-full justify-center gap-1">
-            <el-button type="primary" @click="onSubmit" :loading="isLoading" :disabled="isDisabled">Save</el-button>
-            <el-button type="default" @click="router.go(-1)">Cancel</el-button>
+            <el-button type="primary" size="large" @click="onSubmit" class="grow" :loading="isLoading" :disabled="isDisabled">Save</el-button>
+            <el-button type="warning" size="large" @click="router.go(-1)">Cancel</el-button>
         </div>
     </MicropostEditForm>
 </template>
@@ -47,7 +48,7 @@ const onSubmit = async () => {
     isSubmitting.value = true;
     await submit.execute();
     isSubmitting.value = false;
-    navigateTo({name: 'twits-id', params: { id: data.value?.id }})
+    navigateTo({name: 'microblog-id', params: { id: data.value?.id }})
 }
 
 const submit = useFetch(`/api/microblog/${route.params.id}`, {

@@ -7,7 +7,7 @@ const APP_DOMAIN = process.env.APP_DOMAIN
 export default $config({
   app(input) {
     return {
-      name: "microblog",
+      name: "blog",
       removal: input?.stage === "production" ? "retain" : "remove",
       home: "aws",
       providers: {
@@ -68,7 +68,7 @@ export default $config({
       link: [database, content, cdn],
       domain: APP_DOMAIN,
       environment: {
-        FAST_ACCESSS_KEY: process.env.FAST_ACCESSS_KEY || '',
+        FAST_ACCESS_KEY: process.env.FAST_ACCESS_KEY || '',
         NUXT_SESSION_PASSWORD: process.env.NUXT_SESSION_PASSWORD || '',
       }
     });

@@ -7,7 +7,7 @@
     >
     <div class="flex w-full justify-center gap-1">
         <el-button type="success" @click="() => submit.execute()" class="grow">Create</el-button>
-        <el-button type="danger" @click="navigateTo('/twits')">Return</el-button>
+        <el-button type="danger" @click="navigateTo('/microblog')">Return</el-button>
     </div>
 </MicropostEditForm>
 </template>
@@ -44,7 +44,7 @@ const submit = useFetch('/api/microblog', {
     watch: false,
     immediate: false,
     onResponse: () => {
-        navigateTo('/twits');        
+        navigateTo('/microblog');        
     }
 });
 </script>

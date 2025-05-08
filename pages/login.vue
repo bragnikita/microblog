@@ -39,7 +39,7 @@ async function onSubmit() {
     if (data.ok) {
         await refreshSession();
         storedKey.value = form.key;
-        navigateTo({ name: 'twits' });
+        navigateTo({ name: 'microblog' });
     } else {
         alert(data.message);
     }

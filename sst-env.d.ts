@@ -5,26 +5,6 @@
 
 declare module "sst" {
   export interface Resource {
-    "content": {
-      "name": string
-      "type": "sst.aws.Bucket"
-    }
-    "database": {
-      "name": string
-      "type": "sst.aws.Dynamo"
-    }
-    "main": {
-      "type": "sst.aws.Router"
-      "url": string
-    }
-    "resource-processor": {
-      "name": string
-      "type": "sst.aws.Function"
-    }
-    "web": {
-      "type": "sst.aws.Nuxt"
-      "url": string
-    }
   }
 }
 /// <reference path="sst-env.d.ts" />

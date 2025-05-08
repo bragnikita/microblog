@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
     const { key } = await readValidatedBody(event, z.object({
         key: z.string().nonempty()
     }).parse)
-    if (key !== process.env.FAST_ACCESSS_KEY) {
+    if (key !== process.env.FAST_ACCESS_KEY) {
         return {
             ok: false,
             message: 'Invalid key'

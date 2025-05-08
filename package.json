@@ -7,6 +7,7 @@
     "dev": "nuxt dev",
     "sst:dev": "sst dev",
     "sst:deploy": "sst deploy",
+    "sst:remove": "sst remove",
     "generate": "nuxt generate",
     "postinstall": "nuxt prepare",
     "preview": "nuxt preview"
