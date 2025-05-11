@@ -61,8 +61,9 @@ jobs:
           NUXT_SESSION_PASSWORD: ${{ secrets.NUXT_SESSION_PASSWORD }}
           FAST_ACCESS_KEY: ${{ secrets.FAST_ACCESS_KEY }}
           APP_DOMAIN: ${{ env.APP_DOMAIN }}
+          AWS_REGION: ${{ env.AWS_REGION }}
           NODE_ENV: production
         run: |
           echo "Deploying to production..."
-          pnpm sst:deploy --stage ${{ env.SST_STAGE_NAME }} --region ${{ env.AWS_REGION }}
+          pnpm sst:deploy --stage ${{ env.SST_STAGE_NAME }}
 

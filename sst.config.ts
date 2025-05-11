@@ -12,6 +12,7 @@ export default $config({
       home: "aws",
       providers: {
         aws: {
+          region: process.env.AWS_REGION as any || 'ap-northeast-1',
           profile: process.env.CI ? undefined : 'private'
         }
       }
