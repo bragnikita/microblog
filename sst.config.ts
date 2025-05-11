@@ -11,7 +11,7 @@ export default $config({
       removal: input?.stage === "prod" ? "retain" : "remove",
       home: "aws",
       providers: {
-        aws: {          
+        aws: {
           profile: process.env.CI ? undefined : 'private'
         }
       }
@@ -27,18 +27,18 @@ export default $config({
       },
       primaryIndex: {
         hashKey: 'pk',
-        rangeKey: 'sk'
+        rangeKey: 'sk',
+
       },
       globalIndexes: {
         gsi1: {
           hashKey: 'gsi1pk',
           rangeKey: 'gsi1sk',
         }
-      },
-      ttl: 'expireAt',
+      }
     })
     const content = new sst.aws.Bucket('content', {
-      access: "cloudfront",      
+      access: "cloudfront",
     })
     const resourceProcessor = new sst.aws.Function("resource-processor", {
       handler: "server/functions/image-processor.handler",
@@ -70,6 +70,13 @@ export default $config({
       environment: {
         FAST_ACCESS_KEY: process.env.FAST_ACCESS_KEY || '',
         NUXT_SESSION_PASSWORD: process.env.NUXT_SESSION_PASSWORD || '',
+      },
+      transform: {
+        server: {
+          concurrency: {
+            reserved: 3
+          }
+        }
       }
     });
 
