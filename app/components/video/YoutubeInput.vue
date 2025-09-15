@@ -1,13 +1,14 @@
 <template>
-    <el-space direction="vertical" fill>
-        <el-button v-if="model" @click="onRemove" type="warning" plain>Remove</el-button>
-        <el-button v-else @click="onPasteUrl" type="primary" plain>Paste Youtube URL</el-button>
+    <div class="flex flex-col gap-2">
+        <UButton v-if="model" @click="onRemove" type="button" plain>Remove</UButton>
+        <UButton v-else @click="onPasteUrl" type="button" plain>Paste Youtube URL</UButton>
         <lite-yt-embed :id="model" v-if="model" ref="playerRef" title="" />
-    </el-space>
+    </div>
 </template>
 <script lang="ts" setup>
 import 'vue-lite-youtube-embed/style.css'
 import LiteYtEmbed from 'vue-lite-youtube-embed'
+import { UBadge, UButton } from '#components'
 
 const model = defineModel<string>()
 const playerRef = ref(undefined)

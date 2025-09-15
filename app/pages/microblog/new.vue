@@ -1,54 +1,45 @@
 <template>
-  <UCard>
-    <div class="mb-4">
-      <input
-        type="file"
-        multiple
-        @change="onFilesSelected"
-        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-      />
-    </div>
-    <div class="flex flex-wrap gap-2">
-      <CollPhoto
-        v-for="(fileObj, idx) in files"
-        :key="fileObj.id"
-        :id="fileObj.id"
-        :file="fileObj.file"
-        :uploadUrl="''"
-        @uploaded="(id) => console.log('Uploaded', id)"
-        @deleted="onFileDeleted"
-      />
-    </div>
-  </UCard>
+	<div class="max-w-xl mx-auto py-8 space-y-6">
+		<MicropostFormEdit v-model="form" />
+		<button
+			class="px-4 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
+			@click="onSubmit"
+		>
+			Submit
+		</button>
+		<button
+			type="button"
+			class="ml-2 px-4 py-2 rounded bg-gray-300 text-gray-800 font-semibold hover:bg-gray-400 transition"
+			@click="onReset"
+		>
+			Reset
+		</button>
+		<div class="mt-4 whitespace-pre font-mono text-sm bg-gray-100 p-4 rounded">
+			{{  JSON.stringify(form, null, 2) }}
+		</div>
+	</div>
 </template>
 <script setup lang="ts">
 import { ref } from 'vue';
-import CollPhoto from '~/components/photo/CollPhoto.vue';
+import MicropostFormEdit from '~/components/micropost/form-edit.vue';
 
-interface FileWithId {
-  id: string;
-  file: File;
+const form = ref({
+	title: '',
+	text: '',
+	images: [],
+	isPublic: true,
+});
+
+function onSubmit() {
+		console.log('Micropost form model:', form.value);
 }
 
-const files = ref<FileWithId[]>([]);
-
-function onFilesSelected(e: Event) {
-  const input = e.target as HTMLInputElement;
-  if (!input.files) return;
-  const selected = Array.from(input.files);
-  // Add new files, avoid duplicates by name+size+lastModified
-  const existingKeys = new Set(files.value.map(f => f.file.name + f.file.size + f.file.lastModified));
-  for (const file of selected) {
-    const key = file.name + file.size + file.lastModified;
-    if (!existingKeys.has(key)) {
-      files.value.push({ id: crypto.randomUUID(), file });
-    }
-  }
-  // Reset input so same file can be reselected if needed
-  input.value = '';
-}
-
-function onFileDeleted(id: string) {
-  files.value = files.value.filter(f => f.id !== id);
+function onReset() {
+	form.value = {
+		title: '',
+		text: '',
+		images: [],
+		isPublic: true,
+	};
 }
 </script>

@@ -1,12 +1,15 @@
 <template>
   <div
-    class="w-[100px] h-[100px] border border-gray-300 box-border flex items-center justify-center bg-center bg-no-repeat bg-cover relative"
+    class="w-[200px] h-[200px] border border-gray-300 box-border flex items-center justify-center bg-center bg-no-repeat bg-cover relative"
     :style="imageUrl && !errorMsg ? { backgroundImage: `url('${imageUrl}')` } : {}"
   >
     <span v-if="errorMsg" class="text-red-500 text-xs text-center">{{ errorMsg }}</span>
+    <span v-else-if="processing" class="text-gray-500 text-sm italic">
+      <UIcon name="lucide:loader-2" class="w-12 h-12 animate-spin mr-2 inline-block text-white" />
+    </span>
     <button
       @click.stop="emit('deleted', props.id)"
-      class="absolute z-10 w-8 h-8 flex items-center justify-center rounded-full bg-black border-2 border-white hover:bg-neutral-900 transition-colors duration-150 shadow"
+      class="cursor-pointer absolute z-10 w-6 h-6 flex items-center justify-center rounded-full bg-black border-2 border-white hover:bg-neutral-900 transition-colors duration-150 shadow"
       aria-label="Delete"
       style="top: 0; right: 0; transform: translate(50%, -50%);"
     >
@@ -30,9 +33,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  uploadUrl: {
+  imageUrl: {
     type: String,
     required: false,
+    default: null,
   },
   processing: {
     type: Boolean,
@@ -46,28 +50,7 @@ const emit = defineEmits<{
   (e: "uploaded", id: string): void;
 }>();
 
-const imageUrl = ref<string | null>(null);
 const errorMsg = ref<string | null>(null);
 
-watch(
-  () => props.file,
-  (file) => {
-    imageUrl.value = null;
-    errorMsg.value = null;
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        errorMsg.value = "Not an image";
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        imageUrl.value = e.target?.result as string;
-      };
-      reader.readAsDataURL(file);
-    }
-  },
-  { immediate: true }
-);
-
-defineExpose({ imageUrl, errorMsg });
+defineExpose({errorMsg });
 </script>
