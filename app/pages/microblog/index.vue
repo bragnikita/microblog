@@ -20,7 +20,11 @@
           <div class="inline-block text-gray-500 text-sm">
             {{ new Date(post.timestamp).toLocaleString() }}
           </div>
-          <u-icon name="lucide:link" class="inline-block w-4 h-4 text-gray-400 cursor-pointer" @click="copyLink(post.id)" />
+          <div class="flex items-center gap-3">
+            <micropost-dialog-edit :id="post.id" :model="post" buttonIcon="lucide:edit-2" />
+            <common-delete-confirm @confirm="() => deletePost(post.id)" />
+            <u-icon name="lucide:link" class="inline-block w-4 h-4 text-gray-400 cursor-pointer" @click="copyLink(post.id)" />
+          </div>
         </div>
         <MicropostView :model="post" />
       </div>
@@ -85,6 +89,27 @@ const copyLink = (id: string) => {
     duration: 2000,
     progress: false,
   });
+};
+
+const deletePost = async (id: string) => {
+  try {
+    await $fetch(`/api/microblog/${id}`, { method: 'DELETE' });
+    rest.value = rest.value.filter((p) => p.id !== id);
+    toast.add({
+      title: 'Post deleted',
+      color: 'error',
+      duration: 3000,
+      progress: false,
+    });
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    toast.add({
+      title: 'Error deleting post',
+      description: 'An error occurred while deleting the post. Please try again.',
+      color: 'error',
+      duration: 5000,
+    });
+  }
 };
 
 </script>

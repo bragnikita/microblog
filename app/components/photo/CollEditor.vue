@@ -44,7 +44,7 @@ interface FileWithId {
 }
 
 // const props = defineProps<{ model: string[] }>();
-const model = defineModel<string[]>({
+const model = defineModel<FileWithId[]>({
   type: Array,
   default: () => [],
 });
@@ -54,7 +54,7 @@ const emit = defineEmits<{
 }>();
 
 const [sortableParent, files] = useDragAndDrop(
-  model.value.map((id) => ({ id } as FileWithId))
+  model.value.map((f) => ({ id: f.id, previewUrl: f.previewUrl } as FileWithId))
 );
 const fileInput = ref<HTMLInputElement | null>(null);
 
@@ -158,7 +158,7 @@ watch(
       "Ready files changed, new IDs:",
       newFiles.map((f) => f.id)
     );
-    model.value = newFiles.map((f) => f.id);
+    model.value = newFiles;
   },
   { deep: true }
 );

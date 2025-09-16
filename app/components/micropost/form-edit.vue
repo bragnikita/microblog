@@ -72,10 +72,10 @@ const model = defineModel<{
 
 // Computed for CollEditor (expects string[] of IDs)
 const imageIds = computed({
-  get: () => model.value.images.map((img) => img.id),
-  set: (ids: string[]) => {
+  get: () => model.value.images,
+  set: (ids: ImageItem[]) => {
     // Remove images not in ids
-    model.value.images = ids.map(id => ({id} as ImageItem))
+    model.value.images = ids
   },
 });
 </script>
