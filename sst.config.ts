@@ -68,7 +68,7 @@ export default $config({
       }
     })
     const site = new sst.aws.Nuxt("web", {
-      link: [database, /** content, cdn **/],
+      link: [database,  content, cdn ],
       domain: APP_DOMAIN,
       environment: {
         FAST_ACCESS_KEY: process.env.FAST_ACCESS_KEY || '',

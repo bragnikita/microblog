@@ -13,7 +13,8 @@
     "sst:dev": "sst dev",
     "sst:build": "sst build",
     "sst:unlock": "sst unlock",
-    "sst:deploy": "sst deploy"
+    "sst:deploy": "sst deploy",
+    "command": ""
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.731.1",
@@ -28,6 +29,7 @@
     "lodash": "^4.17.21",
     "luxon": "^3.7.2",
     "nuxt": "^4.1.1",
+    "sharp": "^0.34.3",
     "sst": "3.17.10",
     "vue-easy-lightbox": "^1.19.0",
     "vue-lite-youtube-embed": "^1.2.4",

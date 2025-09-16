@@ -69,29 +69,76 @@ watch(
   { immediate: true }
 );
 
-function onFilesSelected(e: Event) {
+async function onFilesSelected(e: Event) {
   const input = e.target as HTMLInputElement;
   if (!input.files) return;
   const selected = Array.from(input.files);
-  for (const file of selected) {
+
+  const uploadUrls = await $fetch("/api/microblog/content/upload", {
+    method: "POST",
+    body: selected.map((f) => ({ filename: f.name, type: f.type })),
+  });
+
+  for (let i = 0; i < selected.length; i++) {
     const reader = new FileReader();
+    const task = uploadUrls[i]!;
     reader.onload = (e) => {
       const imageUrl = e.target?.result as string;
       files.value.push({
-        id: crypto.randomUUID(),
+        id: task.id,
         previewUrl: imageUrl,
         processing: true,
       } as FileWithId);
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(selected[i]!);
   }
-  // TODO fetch upload URLs for all files
-  // TODO upload all files
-  // TODO set processing = false for all files when done
+
+  await Promise.all(
+    uploadUrls.map(async (f, idx) => {
+      await $fetch(f.upload.url, {
+        method: f.upload.method as never,
+        headers: f.upload.headers,
+        body: selected[idx]!,
+      });
+      const toUpdate = files.value.find((r) => f.id === r.id);
+      if (toUpdate) {
+        toUpdate.previewUrl = f.download.originalUrl; // TODO change to thumbnail later
+      }
+    })
+  );
+  await waitForUploadCompletion(uploadUrls.map((u) => u.id));
 
   // Reset input so same file can be reselected if needed
   input.value = "";
 }
+
+async function waitForUploadCompletion(ids: string[]) {
+  // Poll the server for status
+  let chunkProcessingStatus = "processing";
+  let idsToCheck = [...ids];
+  while (chunkProcessingStatus === "processing") {
+    const res = await $fetch(`/api/microblog/content/info`, {
+      method: "POST",
+      body: { imageKeys: idsToCheck },
+    });
+    res.items.forEach((item: any) => {
+      if (item.status === "completed" || item.status === "failed") {
+        const toUpdate = files.value.find((r) => item.key === r.id);
+        if (toUpdate) {
+          toUpdate.processing = false;
+        }
+        idsToCheck = idsToCheck.filter((id) => id !== item.key);
+      }
+    });
+    if (idsToCheck.length === 0) {
+      chunkProcessingStatus = "completed";
+    } else {
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds before polling again
+    }
+  }
+}
+
+
 function onFileDeleted(id: string) {
   try {
     URL.revokeObjectURL(files.value.find((f) => f.id === id)?.previewUrl || "");
@@ -107,7 +154,10 @@ const readyFiles = computed(() => files.value.filter((f) => !f.processing));
 watch(
   readyFiles,
   (newFiles) => {
-    console.log('Ready files changed, new IDs:', newFiles.map((f) => f.id));
+    console.log(
+      "Ready files changed, new IDs:",
+      newFiles.map((f) => f.id)
+    );
     model.value = newFiles.map((f) => f.id);
   },
   { deep: true }
