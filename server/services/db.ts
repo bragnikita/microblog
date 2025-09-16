@@ -17,7 +17,7 @@ export const MicroPost = new Entity({
     },
     attributes: {
         id: {
-            type: "number",
+            type: "string",
             required: true,
         },
         timestamp: {
