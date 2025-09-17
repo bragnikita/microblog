@@ -7,7 +7,7 @@ import { defineWrappedResponseHandler } from "~~/server/utils/error-handler";
 
 
 const PostValidator = z.object({
-    text: z.string().nonempty().optional(),
+    text: z.string().optional().default(''),
     title: z.string().optional(),
     images: z.array(z.object({
         key: z.string().nonempty(),
