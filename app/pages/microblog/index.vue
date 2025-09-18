@@ -21,7 +21,7 @@
             {{ new Date(post.timestamp).toLocaleString() }}
           </div>
           <div class="flex items-center gap-3">
-            <micropost-dialog-edit :id="post.id" :model="post" buttonIcon="lucide:edit-2" />
+            <micropost-dialog-edit :id="post.id" :model="post" buttonIcon="lucide:edit-2"  @updated="() => updateOne(post.id)"/>
             <common-delete-confirm @confirm="() => deletePost(post.id)" />
             <u-icon name="lucide:link" class="inline-block w-4 h-4 text-gray-400 cursor-pointer" @click="copyLink(post.id)" />
           </div>
@@ -106,6 +106,30 @@ const deletePost = async (id: string) => {
     toast.add({
       title: 'Error deleting post',
       description: 'An error occurred while deleting the post. Please try again.',
+      color: 'error',
+      duration: 5000,
+    });
+  }
+};
+
+const updateOne = async (id: string) => {
+  try {
+    const updated = await $fetch<Model>(`/api/microblog/${id}`);
+    const index = rest.value.findIndex((p) => p.id === id);
+    if (index !== -1) {
+      rest.value[index] = updated;
+      toast.add({
+        title: 'Post updated',
+        color: 'primary',
+        duration: 3000,
+        progress: false,
+      });
+    }
+  } catch (error) {
+    console.error('Error updating post:', error);
+    toast.add({
+      title: 'Error updating post',
+      description: 'An error occurred while updating the post. Please try again.',
       color: 'error',
       duration: 5000,
     });

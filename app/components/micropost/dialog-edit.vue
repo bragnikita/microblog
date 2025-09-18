@@ -23,6 +23,7 @@
 </template>
 
 <script lang="ts" setup>
+import { emit } from 'process';
 import type { Model } from './model';
 
 
@@ -33,6 +34,10 @@ const props = defineProps<{
 }>();
 
 const dialog = ref(false);
+
+const emits = defineEmits<{
+  (e: 'updated'): void;
+}>();
 
 const form = ref({
   title: props.model.title || "",
@@ -48,11 +53,27 @@ const form = ref({
 
 function onSubmit() {
   console.log("Micropost edit submit:", form.value);
-  useToast().add({
-    title: 'Micropost updated',
-    color: 'primary',
-  });
-  dialog.value = false;
+  $fetch(`/api/microblog/${props.id}`, {
+    method: "PUT",
+    body: {
+      text: form.value.text,
+      title: form.value.title,
+      images: form.value.images.map((img: any) => ({ key: img.id })),
+      video: form.value.videoId
+        ? { youtubeId: form.value.videoId }
+        : undefined,
+    },
+  })
+    .then((res) => {
+      console.log("Micropost updated:", res);
+      // Close dialog
+      dialog.value = false;
+      emits('updated');
+    })
+    .catch((err) => {
+      console.error("Error updating micropost:", err);
+      alert("Error updating micropost. See console for details.");
+    });
 }
 
 function onCancel() {
