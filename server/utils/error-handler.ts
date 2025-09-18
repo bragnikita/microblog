@@ -11,12 +11,13 @@ export const defineWrappedResponseHandler = <T extends EventHandlerRequest, D>(
             // do something after the route handler
             return response
         } catch (err) {
+            console.error('Error in handler:', err)
             // Error handling
             if (err instanceof ZodError) {
                 setResponseStatus(event, 400)
                 return {
                     message: 'Invalid request',
-                    details: err.errors,
+                    details: err.issues,
                 }
             }
             return { err }

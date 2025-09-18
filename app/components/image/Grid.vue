@@ -8,11 +8,10 @@
       v-for="(image, i) in images"
       :key="image.key"
     >
-      <el-image
+      <img
         :src="image.thumbnailUrl"
-        lazy
         fit="cover"
-        class="aspect-[3/2] border border-gray-300 rounded-md"
+        class="border border-gray-300 rounded-md"
       />
     </a>
     <vue-easy-lightbox

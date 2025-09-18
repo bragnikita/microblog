@@ -1,5 +1,5 @@
 export type Model = {
-    id: number,
+    id: string,
     text?: string,
     title?: string,
     timestamp: string,
