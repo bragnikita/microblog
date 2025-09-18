@@ -17,8 +17,11 @@ export default defineNuxtConfig({
   },
   css: ['~/assets/css/main.css'],
   ignore: ['.sst/**'],
-      nitro: {
-        preset: 'aws-lambda'
-    },
+  nitro: {
+    preset: 'aws-lambda'
+  },
+  ui: {
+    colorMode: false,
+  },
   compatibilityDate: '2025-07-16'
 })
