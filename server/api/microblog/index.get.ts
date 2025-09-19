@@ -18,6 +18,7 @@ export default defineEventHandler<{ query: { before?: string } }>(async (event) 
                 images: v.images?.map(image => ({
                     key: image.key,
                     thumbnailUrl: ImageResources.thumbnail(image.key),
+                    compressedUrl: ImageResources.compressed(image.key),
                     originalUrl: ImageResources.original(image.key)
                 }))
             }

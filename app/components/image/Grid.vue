@@ -36,6 +36,7 @@ const props = defineProps({
         key: string;
         thumbnailUrl: string;
         originalUrl: string;
+        compressedUrl: string;
       }[]
     >,
     required: true,
@@ -44,7 +45,7 @@ const props = defineProps({
 
 const preview = computed(() =>
   props.images?.map((v) => {
-    return v.originalUrl;
+    return v.compressedUrl || v.originalUrl;
   })
 );
 

@@ -2,7 +2,7 @@ import { Resource } from "sst";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { DateTime } from "luxon";
-import { CONTENT_MINIFIED_PREFIX, CONTENT_ORIGINAL_PREFIX } from "#shared/constants";
+import { CONTENT_COMPRESSED_PREFIX, CONTENT_MINIFIED_PREFIX, CONTENT_ORIGINAL_PREFIX } from "#shared/constants";
 
 function randomString(length: number): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -36,5 +36,10 @@ export const ImageResources = {
         const base = new URL(Resource.main.url)
         base.pathname = `${CONTENT_MINIFIED_PREFIX}${key}`.replaceAll(/\/{2,}/g,'/')
         return base.toString()
-    }
+    },
+    compressed(key: string) {
+        const base = new URL(Resource.main.url)
+        base.pathname = `${CONTENT_COMPRESSED_PREFIX}${key}`.replaceAll(/\/{2,}/g,'/')
+        return base.toString()
+    },
 }

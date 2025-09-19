@@ -2,6 +2,7 @@ import { Resource } from "sst";
 import { z } from "zod";
 import { Image, ResourceJobStatus } from "~~/server/services/db";
 import { CONTENT_MINIFIED_PREFIX, CONTENT_ORIGINAL_PREFIX } from "~~/shared/constants";
+import * as s3 from "../../../services/s3"
 
 const Validator = z.object({
     imageKeys: z.array(z.string())
@@ -23,6 +24,7 @@ export default defineWrappedResponseHandler(async (event) => {
             status: image.preprocessingStatus,
             thumbnailUrl: image.preprocessingStatus === ResourceJobStatus.Completed ? (Resource.main.url + '/' + CONTENT_MINIFIED_PREFIX + image.key) : null,
             originalUrl: Resource.main.url + '/' + CONTENT_ORIGINAL_PREFIX + image.key,
+            compressedUrl: s3.ImageResources.compressed(image.key),
             isProcessing: image.preprocessingStatus && [ResourceJobStatus.Processing, ResourceJobStatus.Waiting].includes(image.preprocessingStatus),
             isProcessed: image.preprocessingStatus === ResourceJobStatus.Completed,
             isUploadFailed: image.preprocessingStatus === ResourceJobStatus.Failed,

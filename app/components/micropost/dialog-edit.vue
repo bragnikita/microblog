@@ -1,29 +1,31 @@
 <template>
-  <div class="inline-block">
-    <u-modal
+  <div>
+    <u-modal    
       v-model:open="dialog"
       :id="props.id"
       :width="'600px'"
-      title="Edit Micropost"
+      fullscreen
+      :ui="{header: ''}"
     >
       <u-button
         :icon="props.buttonIcon || 'lucide:edit-2'"
-        size="sm"
+        size="md"
         @click="dialog = true"
       />
       <template #body>
-        <micropost-form-edit v-model="form" />
-        <div class="flex justify-end gap-2 mt-6">
-          <u-button color="neutral" @click="onCancel">Cancel</u-button>
-          <u-button color="primary" @click="onSubmit">Submit</u-button>
-        </div>
+        <micropost-form-edit v-model="form" />          
+      </template>
+      <template #header="{ close }">
+          <div class="flex justify-between w-full">
+            <u-button color="primary" size='xl' @click="onSubmit" :icon="'lucide:check'">Save</u-button>
+            <u-button color="secondary" @click="close" size='xl'  :icon="'lucide:x'">Cancel</u-button>
+          </div>
       </template>
     </u-modal>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { emit } from 'process';
 import type { Model } from './model';
 
 

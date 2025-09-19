@@ -1,7 +1,7 @@
 <template>
     <div class="flex flex-col gap-2">
-        <UButton v-if="model" @click="onRemove" type="button" plain>Remove</UButton>
-        <UButton v-else @click="onPasteUrl" type="button" plain>Paste Youtube URL</UButton>
+        <UButton v-if="model" @click="onRemove" type="button" plain size="xl">Remove</UButton>
+        <UButton v-else @click="onPasteUrl" type="button" plain size="xl">Paste Youtube URL</UButton>
         <lite-yt-embed :id="model" v-if="model" ref="playerRef" title="" />
     </div>
 </template>

@@ -1,4 +1,4 @@
-import { CONTENT_MINIFIED_PREFIX, CONTENT_ORIGINAL_PREFIX } from '../../shared/constants';
+import { CONTENT_COMPRESSED_PREFIX, CONTENT_MINIFIED_PREFIX, CONTENT_ORIGINAL_PREFIX } from '../../shared/constants';
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { z as zod } from 'zod';
 import { Image, ResourceJobStatus } from '../services/db';
@@ -55,11 +55,9 @@ async function processCreateResourceEvent(sourceBucket: string, bucketKey: strin
     const key = bucketKey.replace(regex, '')
     console.log(`Processing image ${key}`);
     const imageJob = await Image.get({ key }).go();
-    if (imageJob.data) {
-        if (imageJob.data.resourceStatus === 'uploaded') {
-            console.log(`Skipping already processed image ${key}`);
-            return;
-        }
+    if (imageJob.data && imageJob.data.resourceStatus === 'uploaded') {
+        console.log(`Skipping already processed image ${key}`);
+        return;
     }
     try {
         await Image.upsert({ key }).set({ preprocessingStatus: ResourceJobStatus.Processing, resourceStatus: 'uploaded' }).go();
@@ -118,6 +116,22 @@ async function compressAndUpload(sourceBucket: string, originalKey: string, key:
             Body: resizedImage,
             ContentType: 'image/jpeg',
         }))
+
+        if (width > IMAGE_COMPRESSION_MAX_SIDE || height > IMAGE_COMPRESSION_MAX_SIDE && size > IMAGE_COMPRESSION_SIZE_THRESHOLD) {
+            const compressedImage = await sharpImage.keepExif()
+            .resize({fit: 'inside'}, Math.min(IMAGE_COMPRESSION_MAX_SIDE, width)).toFormat('webp').webp({ quality: 80, force: true })
+            .toBuffer();
+
+            const compressedKey = `${CONTENT_COMPRESSED_PREFIX}${key}`
+
+            // overwrite original image with compressed version
+            await s3Client.send(new PutObjectCommand({
+                Bucket: sourceBucket,
+                Key: compressedKey,
+                Body: compressedImage,
+                ContentType: 'image/webp',
+            }))
+        }
     } else {
         await s3Client.send(new PutObjectCommand({
             Bucket: sourceBucket,
@@ -131,6 +145,7 @@ async function compressAndUpload(sourceBucket: string, originalKey: string, key:
 
 const IMAGE_COMPRESSION_SIDE_THRESHOLD = 512; // px
 const IMAGE_COMPRESSION_SIZE_THRESHOLD = 768 * 1024; // bytes, 768kB
+const IMAGE_COMPRESSION_MAX_SIDE = 2048; // px
 
 type ImageMeta = {
     width: number;

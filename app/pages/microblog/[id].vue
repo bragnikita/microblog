@@ -8,7 +8,43 @@
 </template>
 
 <script lang="ts" setup>
+
+
+
 const { data } = useFetch(`/api/microblog/${useRoute().params.id}`, {
   immediate: true,
 });
+
+const reactiveTags = reactive({
+  title: "!Haji no tabi",
+  description: null as string | null,
+  image: null as string | null,
+});
+
+watch(
+  data,
+  (newData) => {
+    if (newData) {
+      reactiveTags.title = newData.title || "Haji no tabi";
+      reactiveTags.description =
+        (newData.text + '???') ||
+        "Yet another personal microblog from one odd guy from Japan.";
+      reactiveTags.image = newData.images?.[0]?.thumbnailUrl || null;
+    }
+  },
+  { immediate: true }
+);
+
+const seoTitle = computed(() => data.value?.title || 'Haji no tabi')
+const seoDescription = computed(() => data.value?.text || 'Yet another personal microblog from one odd guy from Japan.')
+const seoImage = computed(() => data.value?.images?.[0]?.thumbnailUrl || null)
+
+useSeoMeta({
+  title: seoTitle,
+  ogTitle: seoTitle,
+  ogDescription: seoDescription,
+  ogImage: seoImage,  
+  ogLocale: "ru_RU",
+});
+
 </script>

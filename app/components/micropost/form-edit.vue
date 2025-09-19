@@ -1,53 +1,37 @@
 <template>
-  <div class="space-y-4">
-    <!-- Title -->
-    <div>
-      <label class="block text-sm font-medium mb-1" for="micropost-title"
-        >Title</label
-      >
-      <UInput
+  <UForm class="space-y-2" :state="model" >
+    <UTextarea
+        id="micropost-text"
+        v-model="model.text"
+		    :autoresize="true"
+        placeholder="What's on your mind?"
+        class="w-full"
+        :rows="5"
+        size="xl"
+        ref="textField"
+    />
+    <CollEditor v-model="imageIds" />
+
+    <UInput
         id="micropost-title"
         v-model="model.title"
         placeholder="Enter title..."
         autocomplete="off"
         class="w-full"
-      />
-    </div>
+        size="xl"
+    />
 
-    <!-- Text (autogrow) -->
-    <div>
-      <label class="block text-sm font-medium mb-1" for="micropost-text"
-        >Text</label
-      >
-      <UTextarea
-        id="micropost-text"
-        v-model="model.text"
-		:autoresize="true"
-        placeholder="What's on your mind?"
-        class="w-full"
-      />
-    </div>
-
-    <!-- Images -->
-    <div>
-      <label class="block text-sm font-medium mb-1">Images</label>
-      <CollEditor v-model="imageIds" />
-    </div>
-
-	<div>
-		<label class="block text-sm font-medium mb-1">Videos</label>
 		<video-youtube-input v-model="model.videoId" />
-	</div>
-
-    <!-- Public/Private Switch -->
-    <div class="flex items-center gap-2">
+    <USeparator />
+    <div class="flex items-center gap-2 mt-5">
       <label class="text-sm font-medium">Public</label>
-      <USwitch v-model="model.isPublic" color="primary" class="w-10" />
+      <USwitch v-model="model.isPublic" color="primary" class="w-10" size="xl" />
       <span class="text-xs text-gray-500"
         >({{ model.isPublic ? "Visible to everyone" : "Private" }})</span
       >
     </div>
-  </div>
+  </UForm>
+
 </template>
 
 <script setup lang="ts">
@@ -78,4 +62,16 @@ const imageIds = computed({
     model.value.images = ids
   },
 });
+
+// Text input 
+const textField = useTemplateRef('textField')
+
+onMounted(() => {
+  if (textField.value) {
+        const isSmallScreen = window.matchMedia("(max-width: 640px)").matches;
+        if (!isSmallScreen) {
+          textField.value?.textareaRef?.focus();
+        }
+    }
+})
 </script>
