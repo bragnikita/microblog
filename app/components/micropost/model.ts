@@ -6,6 +6,7 @@ export type Model = {
     images?: {
         key: string,
         thumbnailUrl: string,
+        compressedUrl: string,
         originalUrl: string,
     }[],
     video?: {

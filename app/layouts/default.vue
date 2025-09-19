@@ -5,13 +5,18 @@ import { isDevMode } from "#shared/utils";
 const title = "Haji no Tabi";
 const description =
   "Yet another personal microblog from one odd guy from Japan.";
-const config = useRuntimeConfig();
+
+const reqUrl = useRequestURL();
 useSeoMeta({
   title,
   ogTitle: title,
   ogDescription: description,
   description,
-  ogImage: config.public.baseUrl + "/top-image.jpg",
+  ogImage: computed(() => {
+    const newUrl = new URL(reqUrl);
+    newUrl.pathname = "/top-image.jpg";
+    return newUrl.href;
+  }),
   ogLocale: "ru_RU",
 });
 

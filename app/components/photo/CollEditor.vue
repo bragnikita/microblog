@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full flex flex-col gap-y-3">
+  <div class="w-full flex flex-col">
     <input
       ref="fileInput"
       type="file"
@@ -7,7 +7,7 @@
       class="hidden"
       @change="onFilesSelected"
     />
-    <div class="flex flex-wrap gap-3" ref="sortableParent">
+    <div class="flex flex-wrap gap-3 mb-2" ref="sortableParent">
       <CollPhoto
         v-for="(fileObj, idx) in files"
         :key="fileObj.id"
@@ -23,12 +23,6 @@
       @click="() => fileInput?.click()"
     >
       <UIcon name="lucide:image-plus" class="w-8 h-8 text-gray-400" />
-    </div>
-    <div>
-      <UButton
-        label="Finish processing"
-        @click="files.forEach((f) => (f.processing = false))"
-      />
     </div>
   </div>
 </template>
@@ -102,7 +96,7 @@ async function onFilesSelected(e: Event) {
       });
       const toUpdate = files.value.find((r) => f.id === r.id);
       if (toUpdate) {
-        toUpdate.previewUrl = f.download.originalUrl; // TODO change to thumbnail later
+        toUpdate.previewUrl = f.download.thumbnailUrl;
       }
     })
   );
@@ -162,4 +156,7 @@ watch(
   },
   { deep: true }
 );
+
+
+
 </script>

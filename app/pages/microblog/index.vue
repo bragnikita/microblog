@@ -8,38 +8,46 @@
         icon="i-lucide-plus"
         to="/microblog/new"
         color="primary"
+        size="xl"
       />
     </div>
     <div class="text-center p-3 min-h-[50px]" v-if="list.length === 0">
       <div type="info" v-if="!isLoading">No posts yet</div>
       <div v-else>Loading...</div>
     </div>
-    <div class="grow flex flex-col gap-2 p-1" v-else>
-      <div v-for="post in list" :key="post.id" class="p-4 rounded bg-white shadow">
-        <div class="flex justify-between items-center mb-2">
-          <div class="inline-block text-gray-500 text-sm">
-            {{ new Date(post.timestamp).toLocaleString() }}
+    <Transition>
+    <div class="grow flex flex-col gap-2 p-1" v-if="list.length > 0">
+        <div v-for="post in list" :key="post.id" class="p-4 rounded bg-white shadow">
+          <div class="flex justify-between items-center mb-2">
+            <div class="inline-block text-gray-500 text-sm">
+              {{ new Date(post.timestamp).toLocaleString() }}
+            </div>
+            <div class="flex items-center gap-3">
+              <micropost-dialog-edit :id="post.id" :model="post" 
+              buttonIcon="lucide:edit-2"  
+              @updated="() => updateOne(post.id)"
+              />
+              <div>
+                <common-delete-confirm @confirm="() => deletePost(post.id)" />
+                </div>
+                <u-icon name="lucide:link" class="inline-block w-4 h-4 text-gray-400 cursor-pointer" @click="copyLink(post.id)" />
+              </div>
+            </div>
+            <MicropostView :model="post" />
           </div>
-          <div class="flex items-center gap-3">
-            <micropost-dialog-edit :id="post.id" :model="post" buttonIcon="lucide:edit-2"  @updated="() => updateOne(post.id)"/>
-            <common-delete-confirm @confirm="() => deletePost(post.id)" />
-            <u-icon name="lucide:link" class="inline-block w-4 h-4 text-gray-400 cursor-pointer" @click="copyLink(post.id)" />
+          <div class="text-center mt-4 w-full">
+            <u-button
+            v-if="!isLoading"
+            label="Load more"
+            icon="i-lucide-arrow-down"
+            @click="fetchNext"
+            />
+            <div v-else>Loading...</div>
           </div>
-        </div>
-        <MicropostView :model="post" />
       </div>
-      <div class="text-center mt-4 w-full">
-        <u-button
-          v-if="!isLoading"
-          label="Load more"
-          icon="i-lucide-arrow-down"
-          @click="fetchNext"
-        />
-        <div v-else>Loading...</div>
+      </Transition>
       </div>
-    </div>
-  </div>
-</template>
+    </template>
 
 <script lang="ts" setup>
 import _ from "lodash";
@@ -137,3 +145,15 @@ const updateOne = async (id: string) => {
 };
 
 </script>
+<style scoped>
+/* we will explain what these classes do next! */
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 1s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
+</style>
