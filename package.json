@@ -24,7 +24,7 @@
     "@formkit/drag-and-drop": "^0.5.3",
     "@iconify-json/lucide": "^1.2.66",
     "@iconify-json/simple-icons": "^1.2.50",
-    "@nuxt/ui": "^3.3.3",
+    "@nuxt/ui": "^4.0.1",
     "electrodb": "^3.4.5",
     "lodash": "^4.17.21",
     "luxon": "^3.7.2",

@@ -1,6 +1,6 @@
 <template>
   <div class="h-full flex flex-col">
-    <div
+    <!-- <div
       class="p-2 flex justify-end border-b border-gray-200 sticky top-0 bg-white z-10"
     >
       <u-button
@@ -10,7 +10,7 @@
         color="primary"
         size="xl"
       />
-    </div>
+    </div> -->
     <div class="text-center p-3 min-h-[50px]" v-if="list.length === 0">
       <div type="info" v-if="!isLoading">No posts yet</div>
       <div v-else>Loading...</div>

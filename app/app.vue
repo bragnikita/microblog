@@ -1,16 +1,11 @@
 <template>
   <UApp>
-    <UMain>
-      <NuxtLayout>
-        <NuxtPage/>
-      </NuxtLayout>
-    </UMain>
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
   </UApp>
 </template>
 
-<script setup lang="ts">
-</script>
+<script setup lang="ts"></script>
 
-<style>
-
-</style>
+<style></style>
