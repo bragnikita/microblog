@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
         throw new Error(`Post ${id} not found`);
     }
     let publishedAt: string | undefined;
-    if (original.data.visibility === 'draft' || original.data.visibility === 'private' && body.visibility === 'public') {
+    if ((original.data.visibility === 'draft' || original.data.visibility === 'private') && body.visibility === 'public') {
         publishedAt = DateTime.utc().toISO({ suppressMilliseconds: true });
     }
     const post = await MicroPost.update({ id }).set({

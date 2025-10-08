@@ -25,25 +25,36 @@ async function logout() {
 const items = computed<NavigationMenuItem[]>(() => {
   const baseItems: NavigationMenuItem[][] = [
     [
-    //   { label: "Home", to: "/" },
-      { label: "Microblog", to: "/microblog" },
+      //   { label: "Home", to: "/" },
+      {
+        label: "Microblog",
+        children: [
+          { label: "Public", to: "/microblog" },
+          { label: "Private", to: "/microblog/private" },
+          { label: "Drafts", to: "/microblog/drafts" },
+          {
+            label: "Add micropost",
+            to: "/microblog/new",
+            icon: "lucide:circle-plus",
+            class: "text-primary font-bold",
+          },
+        ],
+      },
+      { label: "Books", to: "/books" },
       { label: "Gallery", to: "/" },
       { label: "About", to: "/" },
     ],
   ];
   if (isLoggedIn.value) {
     baseItems.push([
-      { label: "Private Microposts", to: "/microblog/private" },
-      { label: "Logout", onClick: logout, class: "text-secondary font-bold", icon: "lucide:log-out" },
-    ]);
-    baseItems.push([
-        {
-        label: "Add micropost",
-        to: "/microblog/new",
-        icon: "lucide:circle-plus",
-        class: "text-primary font-bold",
+      {
+        label: "Logout",
+        onClick: logout,
+        class: "text-secondary font-bold",
+        icon: "lucide:log-out",
       },
-    ])
+    ]);
+    baseItems.push([]);
   }
   return baseItems;
 });

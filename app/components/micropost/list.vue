@@ -68,7 +68,7 @@ const fetchNext = async () => {
   const before = _.last(list.value)?.publishedAt;
   isLoading.value = true;
   const { list: nextChunk } = await $fetch<{list: Model[]}>(`/api/microblog${props.visibility === 'public' ? '/public' : '/private'}`, {
-    query: { before },
+    query: { before, drafts: props.visibility === 'draft' },
   });
   rest.value = _.uniqBy([...rest.value, ...nextChunk], (v) => v.id);
   isLoading.value = false;
@@ -91,7 +91,7 @@ const onDeleted = async (id: string) => {
 const updateOne = async (id: string) => {
   console.log("Updating post:", id);
   try {
-    const updated = await $fetch<Model>(`/api/microblog/${props.visibility}/${id}`);
+    const updated = await $fetch<Model>(`/api/microblog/private/${id}`);
     if (updated.visibility !== props.visibility) {
       // if visibility changed, just remove from the list
       rest.value = rest.value.filter((p) => p.id !== id);
