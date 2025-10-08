@@ -1,5 +1,5 @@
 <template>
-  <div class="grid gap-1 grid-cols-2">
+  <div class="grid gap-1 grid-cols-2" ref="gridRef">
     <a
       :class="`block ${
         isFullColumnImage(i) ? 'col-span-2' : 'col-span-1'
@@ -8,10 +8,9 @@
       v-for="(image, i) in images"
       :key="image.id"
     >
-      <img
-        :src="image.thumbnailUrl"
-        fit="cover"
-        class="border border-gray-300 rounded-md"
+      <lazy-image
+        :parentRef="gridRef"
+        :imageUrl="image.thumbnailUrl"
       />
     </a>
     <vue-easy-lightbox
@@ -28,6 +27,7 @@
 <script setup lang="ts">
 import type { PropType } from "vue";
 import VueEasyLightbox, { useEasyLightbox } from "vue-easy-lightbox";
+import LazyImage from "~/components/image/LazyImage.vue";
 
 const props = defineProps({
   images: {
@@ -57,4 +57,6 @@ const { show, imgsRef, indexRef, onHide, visibleRef } = useEasyLightbox({
 const isFullColumnImage = (index: number) => {
   return props.images.length % 2 === 1 && index === 0;
 };
+
+const gridRef = ref<HTMLElement | null>(null);
 </script>
