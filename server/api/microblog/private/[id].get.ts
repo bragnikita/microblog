@@ -10,5 +10,5 @@ export default defineEventHandler(async (event) => {
     }
     const mapper = new MicroPostMapper();
     await mapper.loadDependencies();
-    return mapper.mapPublicMicroPost(data[0]);
+    return mapper.mapPrivateMicroPost(data[0]);
 })

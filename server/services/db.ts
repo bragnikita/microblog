@@ -1,12 +1,13 @@
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
-import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb'
-import { Entity } from 'electrodb'
-import { Resource } from 'sst'
+
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import { Entity } from 'electrodb';
 import { DateTime } from "luxon";
-import { number } from 'zod';
+import { Resource } from 'sst';
 
 export const db = DynamoDBDocumentClient.from(new DynamoDBClient({}))
 export const TableName = Resource.database.name
+
 
 
 export const MicroPost = new Entity({
@@ -20,35 +21,100 @@ export const MicroPost = new Entity({
             type: "string",
             required: true,
         },
-        timestamp: {
+        publishedAt: {
+            type: 'string',
+            required: false,
+        },
+        createdAt: {
             type: 'string',
             required: true,
+            default: () => DateTime.utc().toISO(),
+            set: (value) => value ?? DateTime.utc().toISO(),
         },
-        text: {
-            type: 'string'
-        },
-        title: {
-            type: 'string'
-        },
-        images: {
-            type: 'list',
-            items: {
-                type: 'map',
-                properties: {
-                    key: {
-                        type: 'string',
-                        required: true,
+        content: {
+            type: 'map',
+            required: true,
+            properties: {
+                text: {
+                    type: 'string'
+                },
+                title: {
+                    type: 'string'
+                },
+                images: {
+                    type: 'list',
+                    items: {
+                        type: 'map',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                required: true,
+                            },
+                            location: {
+                                type: 'string',
+                                required: false,
+                            },
+                            compressedSides: {
+                                type: 'string',
+                            },
+                            originalFileSize: {
+                                type: 'number',
+                            }
+                        }
+                    },
+                },
+                video: {
+                    type: 'map',
+                    properties: {
+                        youtubeId: {
+                            type: 'string'
+                        }
+                    }
+                },
+                location: {
+                    type: 'map',
+                    properties: {
+                        lat: {
+                            type: 'number',
+                        },
+                        lon: {
+                            type: 'number',
+                        },
+                        label: {
+                            type: 'string',
+                        }
+                    }
+                },
+                links: {
+                    type: 'list',
+                    items: {
+                        type: 'map',
+                        properties: {
+                            url: {
+                                type: 'string',
+                                required: true,
+                            },
+                            title: {
+                                type: 'string',
+                                required: false,
+                            }
+                        }
                     }
                 }
             },
+
         },
-        video: {
-            type: 'map',
-            properties: {
-                youtubeId: {
-                    type: 'string'
-                }
-            }
+        visibility: {
+            type: ['public', 'private', 'draft'] as const,
+            default: 'draft',
+            required: true,
+        },
+        tags: {
+            type: 'set',
+            items: 'string',
+            required: true,
+            set: (value) => value?.length ? value : undefined,
+            get: (value) => value || [],
         },
     },
     indexes: {
@@ -56,12 +122,12 @@ export const MicroPost = new Entity({
             pk: {
                 field: 'pk',
                 composite: [],
-                template: 'micropost'
+                template: 'mp:microblog'
             },
             sk: {
                 field: 'sk',
-                composite: ['timestamp'],
-                template: "${timestamp}",
+                composite: ['id'],
+                template: "${id}",
                 casing: 'none'
             }
         },
@@ -69,13 +135,12 @@ export const MicroPost = new Entity({
             index: 'gsi1',
             pk: {
                 field: 'gsi1pk',
-                composite: ['id'],
-                template: 'micropost#${id}'
+                composite: ['visibility'],
+                template: 'mp:microblog:${visibility}'
             },
             sk: {
                 field: 'gsi1sk',
-                composite: [],
-                template: 'default'
+                composite: ['publishedAt'],
             }
         }
     }

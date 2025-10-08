@@ -42,4 +42,8 @@ export const ImageResources = {
         base.pathname = `${CONTENT_COMPRESSED_PREFIX}${key}`.replaceAll(/\/{2,}/g,'/')
         return base.toString()
     },
+    sizeStringToNumbers(sizeString: string) {
+        const [width, height] = sizeString.split('x').map(v => parseInt(v))
+        return {width, height}
+    }
 }

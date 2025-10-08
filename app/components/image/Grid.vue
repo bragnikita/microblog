@@ -6,7 +6,7 @@
       } min-h-[100px] cursor-pointer`"
       @click="() => show(i)"
       v-for="(image, i) in images"
-      :key="image.key"
+      :key="image.id"
     >
       <img
         :src="image.thumbnailUrl"
@@ -33,9 +33,9 @@ const props = defineProps({
   images: {
     type: Object as PropType<
       {
-        key: string;
+        id: string;
         thumbnailUrl: string;
-        originalUrl: string;
+        originalUrl?: string;
         compressedUrl: string;
       }[]
     >,
@@ -45,7 +45,7 @@ const props = defineProps({
 
 const preview = computed(() =>
   props.images?.map((v) => {
-    return v.compressedUrl || v.originalUrl;
+    return v.compressedUrl || v.originalUrl!;
   })
 );
 

@@ -8,8 +8,7 @@
 </template>
 
 <script lang="ts" setup>
-
-
+import type { Model } from "./../../components/micropost/model";
 
 const { data } = useFetch(`/api/microblog/${useRoute().params.id}`, {
   immediate: true,

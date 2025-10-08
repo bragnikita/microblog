@@ -20,7 +20,7 @@
         <div v-for="post in list" :key="post.id" class="p-4 rounded bg-white shadow">
           <div class="flex justify-between items-center mb-2">
             <div class="inline-block text-gray-500 text-sm">
-              {{ new Date(post.timestamp).toLocaleString() }}
+              {{ new Date(post.publishedAt!).toLocaleString() }}
             </div>
             <div class="flex items-center gap-3">
               <micropost-dialog-edit :id="post.id" :model="post" 
@@ -57,7 +57,7 @@ const rest = ref<Model[]>([]);
 const isLoading = ref(true);
 
 const list = computed(() => {
-  return _.sortBy(rest.value, (v) => v.timestamp).reverse();
+  return _.sortBy(rest.value, (v) => v.publishedAt).reverse();
 });
 
 const toast = useToast();
@@ -67,7 +67,7 @@ onMounted(async () => {
 });
 
 const fetchNext = async () => {
-  const before = _.last(list.value)?.timestamp;
+  const before = _.last(list.value)?.publishedAt;
   isLoading.value = true;
   const { list: nextChunk } = await $fetch("/api/microblog", {
     query: { before },
@@ -101,7 +101,7 @@ const copyLink = (id: string) => {
 
 const deletePost = async (id: string) => {
   try {
-    await $fetch(`/api/microblog/${id}`, { method: 'DELETE' });
+    await $fetch(`/api/microblog/private/${id}`, { method: 'DELETE' });
     rest.value = rest.value.filter((p) => p.id !== id);
     toast.add({
       title: 'Post deleted',
@@ -125,12 +125,16 @@ const updateOne = async (id: string) => {
     const updated = await $fetch<Model>(`/api/microblog/${id}`);
     const index = rest.value.findIndex((p) => p.id === id);
     if (index !== -1) {
-      rest.value[index] = updated;
-      toast.add({
-        title: 'Post updated',
-        color: 'primary',
-        duration: 3000,
-        progress: false,
+      // delete and re-add to trigger reactivity
+      _.remove(rest.value, (p) => p.id === id);
+      await nextTick(() => {
+        rest.value.splice(index, 0, updated);
+        toast.add({
+          title: 'Post updated',
+          icon: 'i-lucide-check-circle',
+          duration: 3000,
+          progress: false,
+        });
       });
     }
   } catch (error) {

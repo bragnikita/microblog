@@ -42,28 +42,29 @@ const emits = defineEmits<{
 }>();
 
 const form = ref({
-  title: props.model.title || "",
-  text: props.model.text || "",
+  title: props.model.content.title || "",
+  text: props.model.content.text || "",
   images:
-    props.model.images?.map((img: any) => ({
-      id: img.key,
+    props.model.content.images?.map((img: any) => ({
+      id: img.id,
       previewUrl: img.thumbnailUrl,
     })) || [],
-  videoId: props.model.video?.youtubeId || "",
+  videoId: props.model.content.video?.youtubeId || "",
   isPublic: true,
 });
 
 function onSubmit() {
   console.log("Micropost edit submit:", form.value);
-  $fetch(`/api/microblog/${props.id}`, {
+  $fetch(`/api/microblog/private/${props.id}`, {
     method: "PUT",
     body: {
       text: form.value.text,
       title: form.value.title,
-      images: form.value.images.map((img: any) => ({ key: img.id })),
+      images: form.value.images.map((img: any) => ({ id: img.id })),
       video: form.value.videoId
         ? { youtubeId: form.value.videoId }
         : undefined,
+      visibility: form.value.isPublic ? "public" : "private",
     },
   })
     .then((res) => {

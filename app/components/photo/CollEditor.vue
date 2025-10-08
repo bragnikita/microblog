@@ -94,10 +94,10 @@ async function onFilesSelected(e: Event) {
         headers: f.upload.headers,
         body: selected[idx]!,
       });
-      const toUpdate = files.value.find((r) => f.id === r.id);
-      if (toUpdate) {
-        toUpdate.previewUrl = f.download.thumbnailUrl;
-      }
+      // const toUpdate = files.value.find((r) => f.id === r.id);
+      // if (toUpdate) {
+      //   toUpdate.previewUrl = f.download.thumbnailUrl;
+      // }
     })
   );
   await waitForUploadCompletion(uploadUrls.map((u) => u.id));
@@ -120,6 +120,7 @@ async function waitForUploadCompletion(ids: string[]) {
         const toUpdate = files.value.find((r) => item.key === r.id);
         if (toUpdate) {
           toUpdate.processing = false;
+          toUpdate.previewUrl = item.thumbnailUrl;
         }
         idsToCheck = idsToCheck.filter((id) => id !== item.key);
       }

@@ -104,11 +104,12 @@ async function compressAndUpload(sourceBucket: string, originalKey: string, key:
     const { width, height, size, orientation } = await sharpImage.metadata();
     if (!width || !height || !size) { throw new Error('Could not read image metadata'); }
 
+    const compressedKey = `${CONTENT_COMPRESSED_PREFIX}${key}`
     const evaluationResult = shoudBeCompressed({ width, height, size });
     if (evaluationResult) {
         const resizedImage = await sharpImage.keepExif()
-        .resize({fit: 'inside'}, IMAGE_COMPRESSION_SIDE_THRESHOLD).toFormat('jpeg').jpeg({ quality: 60, force: true })
-        .toBuffer();
+            .resize({ fit: 'inside' }, IMAGE_COMPRESSION_SIDE_THRESHOLD).toFormat('jpeg').jpeg({ quality: 60, force: true })
+            .toBuffer();
 
         await s3Client.send(new PutObjectCommand({
             Bucket: sourceBucket,
@@ -119,10 +120,10 @@ async function compressAndUpload(sourceBucket: string, originalKey: string, key:
 
         if (width > IMAGE_COMPRESSION_MAX_SIDE || height > IMAGE_COMPRESSION_MAX_SIDE && size > IMAGE_COMPRESSION_SIZE_THRESHOLD) {
             const compressedImage = await sharpImage.keepExif()
-            .resize({fit: 'inside'}, Math.min(IMAGE_COMPRESSION_MAX_SIDE, width)).toFormat('webp').webp({ quality: 80, force: true })
-            .toBuffer();
+                .resize({ fit: 'inside' }, Math.min(IMAGE_COMPRESSION_MAX_SIDE, width)).toFormat('webp').webp({ quality: 80, force: true })
+                .toBuffer();
 
-            const compressedKey = `${CONTENT_COMPRESSED_PREFIX}${key}`
+
 
             // overwrite original image with compressed version
             await s3Client.send(new PutObjectCommand({
@@ -131,6 +132,13 @@ async function compressAndUpload(sourceBucket: string, originalKey: string, key:
                 Body: compressedImage,
                 ContentType: 'image/webp',
             }))
+        } else {
+            await s3Client.send(new PutObjectCommand({
+                Bucket: sourceBucket,
+                Key: compressedKey,
+                Body: originalImageBytes,
+                ContentType: originalImage.ContentType
+            }))
         }
     } else {
         await s3Client.send(new PutObjectCommand({
@@ -138,6 +146,12 @@ async function compressAndUpload(sourceBucket: string, originalKey: string, key:
             Key: minifiedPath,
             Body: originalImageBytes,
             ContentType: originalImage.ContentType,
+        }))
+        await s3Client.send(new PutObjectCommand({
+            Bucket: sourceBucket,
+            Key: compressedKey,
+            Body: originalImageBytes,
+            ContentType: originalImage.ContentType
         }))
     }
 

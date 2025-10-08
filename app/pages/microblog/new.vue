@@ -28,13 +28,14 @@ const form = ref({
 });
 
 function onSubmit() {
-  $fetch(`/api/microblog`, {
+  $fetch(`/api/microblog/private`, {
     method: "POST",
     body: {
       text: form.value.text,
       title: form.value.title,
-      images: form.value.images.map((img: any) => ({ key: img.id })),
+      images: form.value.images.map((img: any) => ({ id: img.id })),
       video: form.value.videoId ? { youtubeId: form.value.videoId } : undefined,
+      visibility: form.value.isPublic ? "public" : "private",
     },
   })
     .then((res) => {
