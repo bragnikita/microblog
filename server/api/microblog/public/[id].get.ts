@@ -4,11 +4,11 @@ import { MicroPostMapper } from "~~/server/services/mappers/microposts";
 
 export default defineEventHandler(async (event) => {
     const { id } = await getValidatedRouterParams(event, z.object({ id: z.string() }).parse);
-    const { data } = await MicroPost.query.primary({ id }).go();
-    if (!data.length) {
+    let post = await MicroPost.get({ id }).go();
+    if (!post?.data) {
         throw new Error(`Post id=${id} not found`);
     }
     const mapper = new MicroPostMapper();
     await mapper.loadDependencies();
-    return mapper.mapPublicMicroPost(data[0]);
+    return mapper.mapPrivateMicroPost(post.data);
 })

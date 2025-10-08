@@ -8,10 +8,12 @@
 </template>
 
 <script lang="ts" setup>
-import type { Model } from "./../../components/micropost/model";
 
-const { data } = useFetch(`/api/microblog/${useRoute().params.id}`, {
+const { data } = useFetch(`/api/microblog/public/${useRoute().params.id}`, {
   immediate: true,
+  onResponse({ response }) {
+    console.log('Fetched micropost data:', response._data);
+  },
 });
 
 const reactiveTags = reactive({
@@ -24,19 +26,19 @@ watch(
   data,
   (newData) => {
     if (newData) {
-      reactiveTags.title = newData.title || "Haji no tabi";
+      reactiveTags.title = newData.content.title || "Haji no tabi";
       reactiveTags.description =
-        (newData.text + '???') ||
+        (newData.content.text + '???') ||
         "Yet another personal microblog from one odd guy from Japan.";
-      reactiveTags.image = newData.images?.[0]?.thumbnailUrl || null;
+      reactiveTags.image = newData.content.images?.[0]?.thumbnailUrl || null;
     }
   },
   { immediate: true }
 );
 
-const seoTitle = computed(() => data.value?.title || 'Haji no tabi')
-const seoDescription = computed(() => data.value?.text || 'Yet another personal microblog from one odd guy from Japan.')
-const seoImage = computed(() => data.value?.images?.[0]?.thumbnailUrl || null)
+const seoTitle = computed(() => data.value?.content?.title || 'Haji no tabi')
+const seoDescription = computed(() => data.value?.content?.text || 'Yet another personal microblog from one odd guy from Japan.')
+const seoImage = computed(() => data.value?.content?.images?.[0]?.thumbnailUrl || null)
 
 useSeoMeta({
   title: seoTitle,

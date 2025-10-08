@@ -1,5 +1,5 @@
 <template>
-  <MicropostList visibility="public"/>
+  <MicropostList visibility="private"/>
 </template>
 
 <script lang="ts" setup>

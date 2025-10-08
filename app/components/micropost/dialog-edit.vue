@@ -31,9 +31,10 @@ import type { Model } from './model';
 
 const props = defineProps<{
   id: string;
-  model: Model;
   buttonIcon?: string;
 }>();
+
+const model = ref<Model | null>(null);
 
 const dialog = ref(false);
 
@@ -42,14 +43,10 @@ const emits = defineEmits<{
 }>();
 
 const form = ref({
-  title: props.model.content.title || "",
-  text: props.model.content.text || "",
-  images:
-    props.model.content.images?.map((img: any) => ({
-      id: img.id,
-      previewUrl: img.thumbnailUrl,
-    })) || [],
-  videoId: props.model.content.video?.youtubeId || "",
+  title:"",
+  text: "",
+  images:[] as { id: string; previewUrl: string }[] ,
+  videoId: "",
   isPublic: true,
 });
 
@@ -82,4 +79,21 @@ function onSubmit() {
 function onCancel() {
   dialog.value = false;
 }
+
+watch(() => props.id, async (newId) => {
+  if (newId) {
+    model.value = await $fetch<Model>(`/api/microblog/private/${newId}`);
+    form.value = {
+      title: model.value.content.title || "",
+      text: model.value.content.text || "",
+      images:
+        model.value.content.images?.map((img: any) => ({
+          id: img.id,
+          previewUrl: img.thumbnailUrl,
+        })) || [],
+      videoId: model.value.content.video?.youtubeId || "",
+      isPublic: model.value.visibility === "public",
+    };
+  }
+}, { immediate: true });
 </script>

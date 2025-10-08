@@ -33,7 +33,7 @@ const items = computed<NavigationMenuItem[]>(() => {
   ];
   if (isLoggedIn.value) {
     baseItems.push([
-      { label: "Admin", to: "/" },
+      { label: "Private Microposts", to: "/microblog/private" },
       { label: "Logout", onClick: logout, class: "text-secondary font-bold", icon: "lucide:log-out" },
     ]);
     baseItems.push([
