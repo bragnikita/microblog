@@ -4,22 +4,24 @@
       <div class="inline-block text-gray-500 text-sm" v-if="publishedAt">
         {{ new Date(publishedAt).toLocaleString() }}
       </div>
-      <div class="flex items-center gap-3">
-        <micropost-dialog-edit
-          :id="id"
-      
-          buttonIcon="lucide:edit-2"
-          @updated="() => emit('updated', id)"
-        />
-        <div>
-          <common-delete-confirm @confirm="() => deletePost(id)" />
+      <auth-state v-slot="{ loggedIn }">       
+        <div class="flex items-center gap-3">
+          <micropost-dialog-edit v-if="loggedIn"
+            :id="id"
+        
+            buttonIcon="lucide:edit-2"
+            @updated="() => emit('updated', id)"
+          />
+          <div>
+            <common-delete-confirm v-if="loggedIn" @confirm="() => deletePost(id)" />
+          </div>
+          <u-icon
+            name="lucide:link"
+            class="inline-block w-4 h-4 text-gray-400 cursor-pointer"
+            @click="copyLink(id)"
+          />
         </div>
-        <u-icon
-          name="lucide:link"
-          class="inline-block w-4 h-4 text-gray-400 cursor-pointer"
-          @click="copyLink(id)"
-        />
-      </div>
+      </auth-state>
     </div>
     <slot />
   </div>

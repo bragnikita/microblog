@@ -10,7 +10,7 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from "@nuxt/ui/runtime/components/NavigationMenu.vue.js";
 import { computed } from "vue";
-const { clear, loggedIn } = useUserSession();
+const { clear, loggedIn, ready, fetch : fetchSession } = useUserSession();
 const isLoggedIn = computed(() =>
   typeof loggedIn === "object" && "value" in loggedIn
     ? loggedIn.value
@@ -27,7 +27,7 @@ const items = computed<NavigationMenuItem[]>(() => {
     [
       //   { label: "Home", to: "/" },
       {
-        label: "Microblog",
+        label: "Microblog " + (ready.value ? 'ready': 'not ready') + ',' + (isLoggedIn.value ? 'logged in' : 'not logged in'),
         children: [
           { label: "Public", to: "/microblog" },
           { label: "Private", to: "/microblog/private" },
@@ -40,9 +40,13 @@ const items = computed<NavigationMenuItem[]>(() => {
           },
         ],
       },
-      { label: "Books", to: "/books" },
+      { label: "Books", to: "/" },
       { label: "Gallery", to: "/" },
       { label: "About", to: "/" },
+      { label: 'Refresh session', onClick: async () => {
+        await fetchSession();
+        useToast().add({ title: "Session refreshed", color: "primary" });
+      } }
     ],
   ];
   if (isLoggedIn.value) {

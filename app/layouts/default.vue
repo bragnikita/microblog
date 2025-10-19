@@ -30,7 +30,7 @@ const mainMenu = ref(false);
 </script>
 
 <template>
-  <MainDefaultHeader/>
+  <MainDefaultHeader v-if="loggedIn"/>
 <UMain>
   <div class="h-full flex flex-col">
     <div class="relative h-[150px] md:h-[300px] md:mb-[-40px]">

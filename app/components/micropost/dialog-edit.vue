@@ -13,7 +13,7 @@
         @click="dialog = true"
       />
       <template #body>
-        <micropost-form-edit v-model="form" />
+        <micropost-form-edit v-model="form" :key="formKey" />
       </template>
       <template #header="{ close }">
         <div class="flex justify-between w-full">
@@ -63,6 +63,8 @@ const emits = defineEmits<{
 
 const isDraft = computed(() => model.value?.visibility === "draft");
 
+const formKey = ref(0)
+
 const form = ref({
   title: "",
   text: "",
@@ -104,10 +106,11 @@ function onCancel() {
 }
 
 watch(
-  () => props.id,
-  async (newId) => {
-    if (newId) {
-      model.value = await $fetch<Model>(`/api/microblog/private/${newId}`);
+  () => dialog.value ,
+  async (isOpen) => {
+    console.log("Dialog open changed:", isOpen, props.id);
+    if (isOpen) {
+      model.value = await $fetch<Model>(`/api/microblog/private/${props.id}`);
       form.value = {
         title: model.value.content.title || "",
         text: model.value.content.text || "",
@@ -119,8 +122,16 @@ watch(
         videoId: model.value.content.video?.youtubeId || "",
         isPublic: model.value.visibility === "public",
       };
+      formKey.value += 1;
+    } else {
+      form.value = {
+        title: "",
+        text: "",
+        images: [],
+        videoId: "",
+        isPublic: true,
+      };
     }
   },
-  { immediate: true }
 );
 </script>

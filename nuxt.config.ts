@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
   app: {
     head: {
-      meta:[{ name: 'viewport', content: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no' }],
+      meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no' }],
     },
   },
   devtools: { enabled: true },
@@ -27,6 +27,12 @@ export default defineNuxtConfig({
   },
   ui: {
     colorMode: false,
+  },
+  runtimeConfig: {
+    session: {
+      password: process.env.NUXT_SESSION_PASSWORD || '',
+      maxAge: 60 * 60 * 24 * 30 // 30 days
+    }
   },
   compatibilityDate: '2025-07-16'
 })
