@@ -1,5 +1,7 @@
 /// <reference path="./.sst/platform/config.d.ts" />
 
+import * as command from "@pulumi/command"
+
 const APP_DOMAIN = process.env.APP_DOMAIN
 
 export default $config({
@@ -84,6 +86,11 @@ export default $config({
         }
       }
     });
+
+    new command.local.Command('migrate', {
+      create: "pnpm app:migrate",
+      update: "pnpm app:migrate",
+    }, { dependsOn: [database]})
 
     return {
       processor: resourceProcessor.name,

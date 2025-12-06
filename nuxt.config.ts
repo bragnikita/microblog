@@ -34,5 +34,6 @@ export default defineNuxtConfig({
       maxAge: 60 * 60 * 24 * 30 // 30 days
     }
   },
+  
   compatibilityDate: '2025-07-16'
 })

@@ -6,7 +6,7 @@ import { DateTime } from "luxon";
 import { Resource } from 'sst';
 
 export const db = DynamoDBDocumentClient.from(new DynamoDBClient({}))
-export const TableName = Resource.database.name
+export const TableName = process.env.TEST ? 'database' : Resource.database.name
 
 
 
