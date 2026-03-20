@@ -40,7 +40,7 @@ export default $config({
       }
     })
     const content = new sst.aws.Bucket('content', {
-      access: "cloudfront",
+      access: "cloudfront",      
     })
     const resourceProcessor = new sst.aws.Function("resource-processor", {
       handler: "server/functions/image-processor.handler",
