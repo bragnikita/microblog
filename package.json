@@ -20,8 +20,11 @@
     "command": ""
   },
   "dependencies": {
+    "@aws/aurora-dsql-node-postgres-connector": "latest",
     "@aws-sdk/client-dynamodb": "^3.1013.0",
     "@aws-sdk/client-s3": "^3.1013.0",
+    "@aws-sdk/credential-providers": "^3.1013.0",
+    "@aws-sdk/dsql-signer": "^3.1013.0",
     "@aws-sdk/lib-dynamodb": "^3.1013.0",
     "@aws-sdk/s3-request-presigner": "^3.1013.0",
     "@formkit/drag-and-drop": "^0.5.3",
@@ -34,6 +37,7 @@
     "lodash": "^4.17.23",
     "luxon": "^3.7.2",
     "nuxt": "^4.4.2",
+    "pg": "^8.16.3",
     "sharp": "^0.34.5",
     "sst": "^4.5.1",
     "vue-easy-lightbox": "^1.19.0",
@@ -46,6 +50,7 @@
     "@types/lodash": "^4.17.20",
     "@types/luxon": "^3.7.1",
     "@types/node": "^22.10.7",
+    "@types/pg": "^8.15.6",
     "@vue/test-utils": "^2.4.6",
     "@vueuse/nuxt": "^14.2.1",
     "eslint": "^10.0.3",

@@ -14,6 +14,11 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Dynamo"
     }
+    "dsql": {
+      "endpoint": string
+      "region": string
+      "type": "sst.aws.Dsql"
+    }
     "main": {
       "type": "sst.aws.Router"
       "url": string

@@ -19,6 +19,9 @@ export default $config({
   },
   async run() {
     const constants = await import('./shared/constants')
+    const dsqlCluster = sst.aws.Dsql.get("dsql", {
+      id: "zvtufeseilumw2xggeyzvth4na",      
+    },)
 
     const database = new sst.aws.Dynamo('database', {
       fields: {
@@ -69,7 +72,7 @@ export default $config({
       }
     })
     const site = new sst.aws.Nuxt("web", {
-      link: [database,  content, cdn ],
+      link: [database, content, cdn, dsqlCluster],
       domain: APP_DOMAIN,
       environment: {
         FAST_ACCESS_KEY: process.env.FAST_ACCESS_KEY || '',
@@ -89,6 +92,7 @@ export default $config({
       processor: resourceProcessor.name,
       content: content.name,
       cdn: cdn.url,
+      dsql: dsqlCluster.endpoint,
       web: site.url,
     }
   },
