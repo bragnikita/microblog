@@ -22,9 +22,9 @@
     </div>
 </template>
 <script lang="ts" setup>
-
 definePageMeta({
-  layout: "login",
+    layout: "login",
+    contentWidth: 'wide',
 });
 const toast = useToast();
 const { query } = useRoute();

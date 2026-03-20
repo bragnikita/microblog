@@ -1,6 +1,33 @@
 <script setup lang="ts">
 import { NuxtLink,  } from "#components";
 import { isDevMode } from "#shared/utils";
+import { computed } from 'vue'
+
+// The page can set `definePageMeta({ contentWidth: 'wide' })` or a pixel string
+// e.g. `definePageMeta({ contentWidth: '800px' })`. We read this value from
+// `route.meta.contentWidth` and compute a CSS class used on the container.
+const route = useRoute()
+const contentWidth = computed(() => (route.meta as any).contentWidth ?? 'default')
+
+const widthClass = computed(() => {
+  const v = contentWidth.value
+  switch (v) {
+    case 'narrow':
+      return 'md:w-[600px]'
+    case 'compact':
+      return 'md:w-[480px]'
+    case 'wide':
+      return 'md:w-[900px]'
+    case 'full':
+      return 'md:w-full max-w-none'
+    default:
+      // accept custom pixel value like '700px' or arbitrary class
+      if (typeof v === 'string' && /^[0-9]+px$/.test(v)) {
+        return `md:w-[${v}]`
+      }
+      return 'md:w-[600px]'
+  }
+})
 
 const title = "Haji no Tabi";
 const description =
@@ -51,7 +78,7 @@ const mainMenu = ref(false);
     class="h-full w-full object-cover object-center"
     />
   </div>
-  <div class="grow mx-auto w-full md:w-[600px] relative">
+  <div :class="['grow mx-auto w-full relative', widthClass]">
     <div class="">
       <div class="shadow-md bg-white md:rounded-md min-h-[200px]">
         <div

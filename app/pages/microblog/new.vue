@@ -37,6 +37,7 @@ import MicropostFormEdit from "~/components/micropost/form-edit.vue";
 
 definePageMeta({
   layout: "clear",
+  contentWidth: 'default',
 });
 
 const form = ref({

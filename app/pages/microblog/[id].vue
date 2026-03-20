@@ -7,7 +7,9 @@
   </div>
 </template>
 
+
 <script lang="ts" setup>
+definePageMeta({ contentWidth: 'default' })
 
 const { data } = useFetch(`/api/microblog/public/${useRoute().params.id}`, {
   immediate: true,

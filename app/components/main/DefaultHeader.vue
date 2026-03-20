@@ -41,7 +41,7 @@ const items = computed<NavigationMenuItem[]>(() => {
         ],
       },
       { label: "Books", to: "/" },
-      { label: "Gallery", to: "/" },
+      { label: "Gallery", to: "/photos" },
       { label: "About", to: "/" },
       { label: 'Refresh session', onClick: async () => {
         await fetchSession();
