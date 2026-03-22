@@ -9,148 +9,11 @@ export const db = DynamoDBDocumentClient.from(new DynamoDBClient({}))
 export const TableName = process.env.TEST ? 'database' : Resource.database.name
 
 
-
-export const MicroPost = new Entity({
-    model: {
-        entity: 'micropost',
-        version: '1',
-        service: 'microblog'
-    },
-    attributes: {
-        id: {
-            type: "string",
-            required: true,
-        },
-        publishedAt: {
-            type: 'string',
-            required: false,
-        },
-        createdAt: {
-            type: 'string',
-            required: true,
-            default: () => DateTime.utc().toISO(),
-            set: (value) => value ?? DateTime.utc().toISO(),
-        },
-        content: {
-            type: 'map',
-            required: true,
-            properties: {
-                text: {
-                    type: 'string'
-                },
-                title: {
-                    type: 'string'
-                },
-                images: {
-                    type: 'list',
-                    items: {
-                        type: 'map',
-                        properties: {
-                            id: {
-                                type: 'string',
-                                required: true,
-                            },
-                            location: {
-                                type: 'string',
-                                required: false,
-                            },
-                            compressedSides: {
-                                type: 'string',
-                            },
-                            originalFileSize: {
-                                type: 'number',
-                            }
-                        }
-                    },
-                },
-                video: {
-                    type: 'map',
-                    properties: {
-                        youtubeId: {
-                            type: 'string'
-                        }
-                    }
-                },
-                location: {
-                    type: 'map',
-                    properties: {
-                        lat: {
-                            type: 'number',
-                        },
-                        lon: {
-                            type: 'number',
-                        },
-                        label: {
-                            type: 'string',
-                        }
-                    }
-                },
-                links: {
-                    type: 'list',
-                    items: {
-                        type: 'map',
-                        properties: {
-                            url: {
-                                type: 'string',
-                                required: true,
-                            },
-                            title: {
-                                type: 'string',
-                                required: false,
-                            }
-                        }
-                    }
-                }
-            },
-
-        },
-        visibility: {
-            type: ['public', 'private', 'draft'] as const,
-            default: 'draft',
-            required: true,
-        },
-        tags: {
-            type: 'set',
-            items: 'string',
-            required: true,
-            set: (value) => value?.length ? value : undefined,
-            get: (value) => value || [],
-        },
-    },
-    indexes: {
-        primary: {
-            pk: {
-                field: 'pk',
-                composite: [],
-                template: 'mp:microblog'
-            },
-            sk: {
-                field: 'sk',
-                composite: ['id'],
-                template: "${id}",
-                casing: 'none'
-            }
-        },
-        gsi1: {
-            index: 'gsi1',
-            pk: {
-                field: 'gsi1pk',
-                composite: ['visibility'],
-                template: 'mp:microblog:${visibility}'
-            },
-            sk: {
-                field: 'gsi1sk',
-                composite: ['publishedAt'],
-            }
-        }
-    }
-}, { client: db, table: TableName })
-
 export const Counters = new Entity({
     model: {
         entity: 'counters',
         version: '1',
-        service: 'microblog',
+        service: 'hajinomura-blog',
     },
     attributes: {
         microposts: {
@@ -190,7 +53,7 @@ export const ResourceJob = new Entity({
     model: {
         entity: 'resource-job',
         version: '1',
-        service: 'microblog',
+        service: 'hajinomura-blog',
     }, attributes: {
         id: {
             type: 'string',
@@ -248,7 +111,7 @@ export const Image = new Entity({
     model: {
         entity: 'image',
         version: '1',
-        service: 'microblog',
+        service: 'hajinomura-blog',
     }, attributes: {
         key: {
             type: 'string',

@@ -1,5 +1,5 @@
 import type { EventHandler, EventHandlerRequest } from 'h3'
-import { z, ZodError } from 'zod'
+import ZodError from 'zod'
 
 export const defineWrappedResponseHandler = <T extends EventHandlerRequest, D>(
     handler: EventHandler<T, D>
@@ -10,7 +10,7 @@ export const defineWrappedResponseHandler = <T extends EventHandlerRequest, D>(
             const response = await handler(event)
             // do something after the route handler
             return response
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error in handler:', err)
             // Error handling
             if (err instanceof ZodError) {
@@ -20,6 +20,7 @@ export const defineWrappedResponseHandler = <T extends EventHandlerRequest, D>(
                     details: err.issues,
                 }
             }
-            return { err }
+            setResponseStatus(event, 500)
+            return { message: 'Internal server error', err }
         }
     })

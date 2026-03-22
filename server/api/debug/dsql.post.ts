@@ -1,8 +1,8 @@
-import { testDsqlConnection } from "~~/server/services/dsql";
+import { testDsqlConnection, testLocalPgConnection } from "~~/server/services/dsql";
 
 export default defineEventHandler(async (event) => {
   try {
-    return await testDsqlConnection();
+    return import.meta.dev ? await testLocalPgConnection() : await testDsqlConnection();
   } catch (error: any) {
     const statusCode = error?.statusCode || 500;
     setResponseStatus(event, statusCode);

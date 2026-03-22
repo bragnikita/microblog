@@ -24,11 +24,10 @@
 
 ## Developer Workflows
 - **Install dependencies:** `pnpm install`
-- **Dev server:** `pnpm dev` (frontend + server)
-- **Build:** `pnpm build`
-- **Preview production:** `pnpm preview`
+- **Dev server:** `pnpm sst:dev` (frontend + server)
 - **Lint:** (see `eslint.config.mjs`)
 - **Type-check:** `tsc --noEmit`
+- **Nuxt build:** `pnpm nuxt:build`
 
 ## Integration & Data Flow
 - Frontend calls backend via Nuxt server routes (see `server/functions/`).
