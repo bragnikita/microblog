@@ -1,5 +1,5 @@
 import type { EventHandler, EventHandlerRequest } from 'h3'
-import ZodError from 'zod'
+import {ZodError} from 'zod'
 
 export const defineWrappedResponseHandler = <T extends EventHandlerRequest, D>(
     handler: EventHandler<T, D>

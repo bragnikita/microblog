@@ -34,11 +34,10 @@ export function getLocalDb(): DbConnection {
  * Must be called inside an SST-aware runtime (Lambda / `sst dev`).
  */
 export async function getDsqlDb(): Promise<DbConnection> {
-  const { Resource } = await import('sst');
   const { AuroraDSQLClient } = await import('@aws/aurora-dsql-node-postgres-connector');
 
   const client = new AuroraDSQLClient({
-    host: Resource.dsql.endpoint,
+    host: `${process.env.DSQL_ENDPOINT_NAME}.dsql.ap-northeast-1.on.aws`,
     user: 'admin',
     database: 'postgres',
     connectionTimeoutMillis: 5000,

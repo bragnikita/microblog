@@ -1,5 +1,6 @@
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { getLocalDb, getDsqlDb } from './server/db/index';
+import { dsqlMigrate } from './server/db/dsql-migrator';
 
 console.log('Migration started');
 
@@ -9,7 +10,11 @@ console.log(`Target: ${target}`);
 const conn = target === 'dsql' ? await getDsqlDb() : getLocalDb();
 
 try {
-  await migrate(conn.db, { migrationsFolder: './drizzle/migrations' });
+  if (target === 'dsql') {
+    await dsqlMigrate(conn.db, './drizzle/migrations');
+  } else {
+    await migrate(conn.db, { migrationsFolder: './drizzle/migrations' });
+  }
   console.log('Migration completed successfully.');
 } finally {
   await conn.cleanup();

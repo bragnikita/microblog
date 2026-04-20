@@ -1,0 +1,7 @@
+- Drag And Drop
+    - https://drag-and-drop.formkit.com/
+    - https://vueuse.org/core/useDraggable/#usedraggable
+    - https://grid-layout-plus.netlify.app/
+    - https://vueuse.org/core/useDropZone/
+- Utils
+    - https://github.com/jasongorst/nuxt-lodash
