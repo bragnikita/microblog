@@ -28,7 +28,7 @@
 </template>
 <script setup lang="ts">
 import { useDragAndDrop } from "@formkit/drag-and-drop/vue";
-import { defineEmits, ref, watch } from "vue";
+import { ref, watch } from "vue";
 import CollPhoto from "~/components/photo/CollPhoto.vue";
 
 interface FileWithId {

@@ -25,20 +25,9 @@ async function logout() {
 const items = computed<NavigationMenuItem[]>(() => {
   const baseItems: NavigationMenuItem[][] = [
     [
-      //   { label: "Home", to: "/" },
       {
-        label: "Microblog " + (ready.value ? 'ready': 'not ready') + ',' + (isLoggedIn.value ? 'logged in' : 'not logged in'),
-        children: [
-          { label: "Public", to: "/microblog" },
-          { label: "Private", to: "/microblog/private" },
-          { label: "Drafts", to: "/microblog/drafts" },
-          {
-            label: "Add micropost",
-            to: "/microblog/new",
-            icon: "lucide:circle-plus",
-            class: "text-primary font-bold",
-          },
-        ],
+        label: "Microblog",
+        to: "/microblog",
       },
       { label: "Books", to: "/" },
       { label: "Gallery", to: "/photos" },

@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 /* deno-fmt-ignore-file */
+/* biome-ignore-all lint: auto-generated */
 
 declare module "sst" {
   export interface Resource {
@@ -12,6 +13,11 @@ declare module "sst" {
     "database": {
       "name": string
       "type": "sst.aws.Dynamo"
+    }
+    "dsql": {
+      "endpoint": string
+      "region": string
+      "type": "sst.aws.Dsql"
     }
     "main": {
       "type": "sst.aws.Router"

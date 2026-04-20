@@ -18,6 +18,16 @@ export default defineNuxtConfig({
   vite: {
     server: {
       allowedHosts: ['.local', '.localhost', '.ngrok-free.app', '.ngrok.dev'],
+    },
+    optimizeDeps: {
+      include: [
+        '@vue/devtools-core',
+        '@vue/devtools-kit',
+        'lodash',
+        'vue-easy-lightbox',
+        'vue-lite-youtube-embed',
+        '@formkit/drag-and-drop'
+      ]
     }
   },
   css: ['~/assets/css/main.css'],

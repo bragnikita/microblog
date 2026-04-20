@@ -1,7 +1,7 @@
 /// <reference path="./.sst/platform/config.d.ts" />
 
 
-const APP_DOMAIN = process.env.APP_DOMAIN
+const APP_DOMAIN = process.env.APP_DOMAIN as string
 
 export default $config({
   app(input) {
@@ -19,6 +19,9 @@ export default $config({
   },
   async run() {
     const constants = await import('./shared/constants')
+    const dsqlCluster = sst.aws.Dsql.get("dsql", {
+      id: "zvtufeseilumw2xggeyzvth4na",
+    },)
 
     const database = new sst.aws.Dynamo('database', {
       fields: {
@@ -59,24 +62,24 @@ export default $config({
         events: ['s3:ObjectCreated:*']
       }]
     })
-    const prefix = `/${constants.CONTENT_URL_PREFIX}*`
+    const prefix = `/${constants.CONTENT_URL_PREFIX}`
     const cdn = new sst.aws.Router("main", {
-      domain: APP_DOMAIN ? 'cdn.' + APP_DOMAIN : undefined,
-      routes: {
-        [prefix]: {
-          bucket: content,
-        }
-      }
+      domain: APP_DOMAIN ? { name: APP_DOMAIN } : undefined,
     })
+    cdn.routeBucket(prefix, content);
+
     const site = new sst.aws.Nuxt("web", {
-      link: [database,  content, cdn ],
-      domain: APP_DOMAIN,
+      link: [database, content, cdn, dsqlCluster],
+      router: {
+        instance: cdn,
+        domain: APP_DOMAIN || undefined
+      },
       environment: {
         FAST_ACCESS_KEY: process.env.FAST_ACCESS_KEY || '',
         NUXT_SESSION_PASSWORD: process.env.NUXT_SESSION_PASSWORD || '',
+        SITE_URL: APP_DOMAIN ? `https://${APP_DOMAIN}` : cdn.url,
       },
       transform: {
-        
         server: {
           name: `${$app.name}-${$app.stage}-nuxt-server`,
           concurrency: {
@@ -89,6 +92,7 @@ export default $config({
       processor: resourceProcessor.name,
       content: content.name,
       cdn: cdn.url,
+      dsql: dsqlCluster.endpoint,
       web: site.url,
     }
   },
