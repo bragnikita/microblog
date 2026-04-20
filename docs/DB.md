@@ -63,7 +63,9 @@ CREATE INDEX contents_slug_idx
 CREATE TABLE photos (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-    storage_key         TEXT NOT NULL,          -- S3 key / local path / object key
+    original_key    TEXT NOT NULL,
+    large_key TEXT NOT NULL,
+    thumb_key TEXT NOT NULL,
     original_filename   TEXT,
     mime_type           VARCHAR(100),
     width               INTEGER,

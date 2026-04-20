@@ -6,10 +6,12 @@ export async function testLocalPgConnection() {
   const port = Number(process.env.POSTGRES_PORT ?? 5432);
   const user = process.env.POSTGRES_USER ?? "postgres";
   const password = process.env.POSTGRES_PASSWORD ?? "postgres";
-  const database = process.env.POSTGRES_DB ?? "blog";
+  const database = process.env.POSTGRES_DB ?? "postgres";
 
   const client = new pg.Client({ host, port, user, password, database, connectionTimeoutMillis: 5000 });
   const startedAt = Date.now();
+
+  console.log(`Testing local PostgreSQL connection to ${host}:${port}/${database}...`);
 
   try {
     await client.connect();
