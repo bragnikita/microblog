@@ -1,6 +1,7 @@
 import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import * as schema from './schema';
+import { isSstDev } from '../utils/env';
 
 export { schema };
 export type AppDb = NodePgDatabase<typeof schema>;
@@ -49,4 +50,15 @@ export async function getDsqlDb(): Promise<DbConnection> {
     db: drizzle({ client: client as unknown as pg.Client, schema }),
     cleanup: () => client.end().catch(() => {}),
   };
+}
+
+/**
+ * Selects the appropriate DB connection based on the runtime environment.
+ * Uses local Postgres in development (import.meta.dev), DSQL in production.
+ */
+export async function useDb(): Promise<DbConnection> {
+  if (import.meta.dev || isSstDev()) {
+    return getLocalDb();
+  }
+  return getDsqlDb();
 }

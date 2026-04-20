@@ -1,8 +1,11 @@
-import { CONTENT_COMPRESSED_PREFIX, CONTENT_MINIFIED_PREFIX, CONTENT_ORIGINAL_PREFIX } from '../../shared/constants';
-import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { IMAGES_DROP_PREFIX, IMAGES_ORIGINALS_PREFIX, imageLargeKey, imageOriginalKey, imageThumbKey } from '../../shared/constants';
+import { CopyObjectCommand, DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { randomUUID } from 'node:crypto';
 import { z as zod } from 'zod';
-import { Image, ResourceJobStatus } from '../services/db';
-
+import { Job, JobStatus, ResourceJobType } from '../services/db';
+import { useDb } from '../db/index';
+import * as schema from '../db/schema';
+import exifr from 'exifr';
 
 const s3EventValidator = zod.object({
     Records: zod.array(
@@ -24,168 +27,311 @@ const s3EventValidator = zod.object({
     ),
 });
 
+const jobPayloadValidator = zod.object({
+    mimeType: zod.string(),
+    originalFilename: zod.string(),
+    originalKey: zod.string(),
+    largeKeyWebp: zod.string(),
+    largeKeyJpg: zod.string(),
+    thumbKey: zod.string(),
+});
+
 const s3Client = new S3Client({ region: 'ap-northeast-1' });
 
+// Matches files/images/originals/{photoId}/original
+const ORIGINAL_KEY_REGEX = new RegExp(`^${IMAGES_ORIGINALS_PREFIX}([^/]+)/original$`);
+
+// Matches files/images/drop/{filename} (any depth under drop prefix)
+const DROP_KEY_REGEX = new RegExp(`^${IMAGES_DROP_PREFIX}(.+)$`);
+
 export const handler = async (event: unknown) => {
-    const { data, error } = s3EventValidator.safeParse(event)
+    const { data, error } = s3EventValidator.safeParse(event);
     if (error) {
-        console.error('Could not process an event', error)
+        console.error('Could not process an event', error);
         return;
     }
     for (const record of data.Records) {
-        const decodedKey = decodeURIComponent(record.s3.object.key)
-        console.log(`Processing event ${record.eventName} for ${record.s3.bucket.name}/${decodedKey}`)
+        const decodedKey = decodeURIComponent(record.s3.object.key);
+        console.log(`Processing event ${record.eventName} for ${record.s3.bucket.name}/${decodedKey}`);
         if (record.eventName.startsWith('ObjectCreated:')) {
             try {
-                await processCreateResourceEvent(record.s3.bucket.name, decodedKey)
+                if (DROP_KEY_REGEX.test(decodedKey)) {
+                    await processDropUpload(record.s3.bucket.name, decodedKey);
+                } else if (ORIGINAL_KEY_REGEX.test(decodedKey)) {
+                    await processOriginalUpload(record.s3.bucket.name, decodedKey);
+                } else {
+                    console.log(`Key ${decodedKey} does not match any known pattern, skipping`);
+                }
             } catch (e) {
-                console.error(`Processing failure for image [${decodedKey}]:`, e)
+                console.error(`Processing failure for key [${decodedKey}]:`, e);
             }
         }
     }
-}
-
-function escapeRegExp(string: string): string {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
-}
-const escapedPrefix = escapeRegExp(CONTENT_ORIGINAL_PREFIX)
-const regex = new RegExp(`^${escapedPrefix}`)
-
-async function processCreateResourceEvent(sourceBucket: string, bucketKey: string) {
-    const key = bucketKey.replace(regex, '')
-    console.log(`Processing image ${key}`);
-    const imageJob = await Image.get({ key }).go();
-    if (imageJob.data && imageJob.data.resourceStatus === 'uploaded') {
-        console.log(`Skipping already processed image ${key}`);
-        return;
-    }
-    try {
-        await Image.upsert({ key }).set({ preprocessingStatus: ResourceJobStatus.Processing, resourceStatus: 'uploaded' }).go();
-        await compressAndUpload(sourceBucket, bucketKey, key);
-        await Image.update({ key }).set({ preprocessingStatus: ResourceJobStatus.Completed }).go();
-    } catch (e) {
-        console.error(`Could not process image ${key}`, e);
-        await Image.upsert({ key }).set({ preprocessingStatus: ResourceJobStatus.Failed, resourceStatus: 'uploaded' }).go();
-    }
-
-}
-
-async function isFileExists(bucket: string, key: string) {
-    try {
-        await s3Client.send(new GetObjectCommand({
-            Bucket: bucket,
-            Key: key,
-        }));
-        return true;
-    } catch (e) {
-        return false;
-    }
-}
-
-async function compressAndUpload(sourceBucket: string, originalKey: string, key: string) {
-    const minifiedPath = `${CONTENT_MINIFIED_PREFIX}${key}`;
-    const minifiedExists = await isFileExists(sourceBucket, minifiedPath);
-    if (minifiedExists) {
-        throw new Error(`Minified image already exists for ${key}`);
-    }
-
-    const { default: sharp } = await import('sharp');
-
-    const originalImage = await s3Client.send(new GetObjectCommand({
-        Bucket: sourceBucket,
-        Key: originalKey
-    }));
-    if (!originalImage.Body) {
-        throw new Error(`Could not read image ${key}`);
-    }
-    const originalImageBytes = await originalImage.Body.transformToByteArray();
-    const sharpImage = sharp(originalImageBytes);
-
-    const { width, height, size, orientation } = await sharpImage.metadata();
-    if (!width || !height || !size) { throw new Error('Could not read image metadata'); }
-
-    const compressedKey = `${CONTENT_COMPRESSED_PREFIX}${key}`
-    const evaluationResult = shoudBeCompressed({ width, height, size });
-    if (evaluationResult) {
-        const resizedImage = await sharpImage.keepExif()
-            .resize({ fit: 'inside' }, IMAGE_COMPRESSION_SIDE_THRESHOLD).toFormat('jpeg').jpeg({ quality: 60, force: true })
-            .toBuffer();
-
-        await s3Client.send(new PutObjectCommand({
-            Bucket: sourceBucket,
-            Key: minifiedPath,
-            Body: resizedImage,
-            ContentType: 'image/jpeg',
-        }))
-
-        if (width > IMAGE_COMPRESSION_MAX_SIDE || height > IMAGE_COMPRESSION_MAX_SIDE && size > IMAGE_COMPRESSION_SIZE_THRESHOLD) {
-            const compressedImage = await sharpImage.keepExif()
-                .resize({ fit: 'inside' }, Math.min(IMAGE_COMPRESSION_MAX_SIDE, width)).toFormat('webp').webp({ quality: 80, force: true })
-                .toBuffer();
-
-
-
-            // overwrite original image with compressed version
-            await s3Client.send(new PutObjectCommand({
-                Bucket: sourceBucket,
-                Key: compressedKey,
-                Body: compressedImage,
-                ContentType: 'image/webp',
-            }))
-        } else {
-            await s3Client.send(new PutObjectCommand({
-                Bucket: sourceBucket,
-                Key: compressedKey,
-                Body: originalImageBytes,
-                ContentType: originalImage.ContentType
-            }))
-        }
-    } else {
-        await s3Client.send(new PutObjectCommand({
-            Bucket: sourceBucket,
-            Key: minifiedPath,
-            Body: originalImageBytes,
-            ContentType: originalImage.ContentType,
-        }))
-        await s3Client.send(new PutObjectCommand({
-            Bucket: sourceBucket,
-            Key: compressedKey,
-            Body: originalImageBytes,
-            ContentType: originalImage.ContentType
-        }))
-    }
-
-}
-
-const IMAGE_COMPRESSION_SIDE_THRESHOLD = 512; // px
-const IMAGE_COMPRESSION_SIZE_THRESHOLD = 768 * 1024; // bytes, 768kB
-const IMAGE_COMPRESSION_MAX_SIDE = 2048; // px
-
-type ImageMeta = {
-    width: number;
-    height: number;
-    size: number;
 };
 
-function shoudBeCompressed({ width, height, size }: ImageMeta) {
-    if (
-        width > IMAGE_COMPRESSION_SIDE_THRESHOLD ||
-        height > IMAGE_COMPRESSION_SIDE_THRESHOLD ||
-        size > IMAGE_COMPRESSION_SIZE_THRESHOLD
-    ) {
-        return true
-        // if (width >= height) {
-        //     return {
-        //         width: IMAGE_COMPRESSION_SIDE_THRESHOLD,
-        //         height: Math.ceil(IMAGE_COMPRESSION_SIDE_THRESHOLD / (width / height)),
-        //     };
-        // } else {
-        //     return {
-        //         width: Math.ceil(IMAGE_COMPRESSION_SIDE_THRESHOLD / (height / width)),
-        //         height: IMAGE_COMPRESSION_SIDE_THRESHOLD,
-        //     };
-        // }
+async function processDropUpload(bucket: string, dropKey: string) {
+    const match = DROP_KEY_REGEX.exec(dropKey);
+    if (!match || !match[1]) {
+        console.log(`Drop key ${dropKey} did not match expected pattern, skipping`);
+        return;
     }
 
-    return false;
+    // Use just the basename as the original filename
+    const droppedPath = match[1];
+    const originalFilename = droppedPath.split('/').pop() ?? droppedPath;
+    console.log(`Processing drop upload: ${originalFilename}`);
+
+    // Get ContentType without downloading the body
+    const headResult = await s3Client.send(new HeadObjectCommand({ Bucket: bucket, Key: dropKey }));
+    const mimeType = headResult.ContentType ?? 'application/octet-stream';
+
+    const photoId = randomUUID();
+    const originalKey = imageOriginalKey(photoId);
+    const largeKeyWebp = imageLargeKey(photoId, 'webp');
+    const largeKeyJpg = imageLargeKey(photoId, 'jpg');
+    const thumbKey = imageThumbKey(photoId);
+
+    // Register processing job before moving the file
+    await Job.create({
+        id: photoId,
+        status: JobStatus.Waiting,
+        type: ResourceJobType.ProcessImage,
+        createdAt: new Date().toISOString(),
+        payload: {
+            mimeType,
+            originalFilename,
+            originalKey,
+            largeKeyWebp,
+            largeKeyJpg,
+            thumbKey,
+        },
+    }).go();
+    console.log(`Created job ${photoId} for drop upload ${originalFilename}`);
+
+    // Copy to the originals location — this triggers the processing branch
+    await s3Client.send(new CopyObjectCommand({
+        Bucket: bucket,
+        CopySource: `${bucket}/${dropKey}`,
+        Key: originalKey,
+        ContentType: mimeType,
+        MetadataDirective: 'REPLACE',
+    }));
+
+    // Delete the drop file
+    await s3Client.send(new DeleteObjectCommand({ Bucket: bucket, Key: dropKey }));
+
+    console.log(`Drop file ${dropKey} moved to ${originalKey}, processing job ${photoId} queued`);
+}
+
+async function processOriginalUpload(bucket: string, s3Key: string) {
+    const match = ORIGINAL_KEY_REGEX.exec(s3Key);
+    if (!match || !match[1]) {
+        console.log(`Key ${s3Key} does not match expected original pattern, skipping`);
+        return;
+    }
+    const photoId: string = match[1];
+    console.log(`Processing photo ${photoId}`);
+
+    const jobResult = await Job.get({ id: photoId }).go();
+    if (!jobResult.data) {
+        console.error(`No job found for photoId ${photoId}`);
+        return;
+    }
+    const job = jobResult.data;
+    if (job.type !== ResourceJobType.ProcessImage) {
+        console.error(`Job ${photoId} is not a ProcessImage job`);
+        return;
+    }
+    if (job.status === JobStatus.Completed) {
+        console.log(`Job ${photoId} already completed, skipping`);
+        return;
+    }
+
+    const payloadParse = jobPayloadValidator.safeParse(job.payload);
+    if (!payloadParse.success) {
+        console.error(`Invalid payload for job ${photoId}`, payloadParse.error);
+        await Job.update({ id: photoId }).set({ status: JobStatus.Failed, statusMessage: 'Invalid job payload' }).go();
+        return;
+    }
+    const payload = payloadParse.data;
+
+    try {
+        await Job.update({ id: photoId }).set({ status: JobStatus.Processing }).go();
+        const { largeFormat, width, height, fileSizeBytes, latitude, longitude, takenAt } =
+            await generateDerivatives(bucket, s3Key, photoId, payload);
+
+        const largeKey = imageLargeKey(photoId, largeFormat);
+        const thumbKey = imageThumbKey(photoId);
+
+        const { db, cleanup } = await useDb();
+        try {
+            await db.insert(schema.photos).values({
+                id: photoId,
+                originalKey: payload.originalKey,
+                largeKey,
+                thumbKey,
+                originalFilename: payload.originalFilename,
+                mimeType: payload.mimeType,
+                width,
+                height,
+                fileSizeBytes: fileSizeBytes ?? null,
+                latitude: latitude !== undefined ? String(latitude) : null,
+                longitude: longitude !== undefined ? String(longitude) : null,
+                takenAt: takenAt ?? null,
+            });
+        } finally {
+            await cleanup();
+        }
+
+        await Job.update({ id: photoId }).set({ status: JobStatus.Completed }).go();
+        console.log(`Photo ${photoId} processed successfully`);
+    } catch (e) {
+        console.error(`Failed to process photo ${photoId}:`, e);
+        await Job.update({ id: photoId }).set({
+            status: JobStatus.Failed,
+            statusMessage: e instanceof Error ? e.message : String(e),
+        }).go();
+    }
+}
+
+const THUMB_MAX_SIDE = 512;
+const LARGE_MAX_SIDE = 2048;
+const COMPRESSION_SIZE_THRESHOLD = 768 * 1024; // 768 kB
+
+async function generateDerivatives(
+    bucket: string,
+    originalS3Key: string,
+    photoId: string,
+    payload: { mimeType: string; largeKeyWebp: string; largeKeyJpg: string; thumbKey: string, originalFilename: string },
+) {
+    const { default: sharp } = await import('sharp');
+
+    const getResult = await s3Client.send(new GetObjectCommand({ Bucket: bucket, Key: originalS3Key }));
+    if (!getResult.Body) {
+        throw new Error(`Could not read image body for ${originalS3Key}`);
+    }
+    const originalBytes = await getResult.Body.transformToByteArray();
+
+    const image = sharp(originalBytes);
+    const metadata = await image.metadata();
+    const { width, height, size } = metadata;
+    if (!width || !height) {
+        throw new Error('Could not read image dimensions');
+    }
+
+    // Extract EXIF metadata
+    const exif = await extractExif(originalBytes);
+    if (!exif.takenAt) {
+        exif.takenAt = inferDateFromFilename(payload.originalFilename);
+    }
+
+    // --- Thumb (always JPEG, 512px max side) ---
+    const thumbBuffer = await sharp(originalBytes)
+        .keepExif()
+        .resize(THUMB_MAX_SIDE, THUMB_MAX_SIDE, { fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 60 })
+        .toBuffer();
+
+    await s3Client.send(new PutObjectCommand({
+        Bucket: bucket,
+        Key: imageThumbKey(photoId),
+        Body: thumbBuffer,
+        ContentType: 'image/jpeg',
+    }));
+
+    // --- Large (WebP if oversized, otherwise copy original) ---
+    const needsCompression =
+        width > LARGE_MAX_SIDE || height > LARGE_MAX_SIDE || (size !== undefined && size > COMPRESSION_SIZE_THRESHOLD);
+
+    // Derive extension from sharp format name ('jpeg' → 'jpg', others as-is)
+    const originalFormat = metadata.format ?? 'jpg';
+    const originalExt = originalFormat === 'jpeg' ? 'jpg' : originalFormat;
+
+    let largeFormat: string;
+    let largeBuffer: Uint8Array;
+    let largeContentType: string;
+
+    if (needsCompression) {
+        largeFormat = 'webp';
+        largeBuffer = await sharp(originalBytes)
+            .keepExif()
+            .resize(LARGE_MAX_SIDE, LARGE_MAX_SIDE, { fit: 'inside', withoutEnlargement: true })
+            .webp({ quality: 80 })
+            .toBuffer();
+        largeContentType = 'image/webp';
+    } else {
+        largeFormat = originalExt;
+        largeBuffer = originalBytes;
+        largeContentType = getResult.ContentType ?? payload.mimeType;
+    }
+
+    await s3Client.send(new PutObjectCommand({
+        Bucket: bucket,
+        Key: imageLargeKey(photoId, largeFormat),
+        Body: largeBuffer,
+        ContentType: largeContentType,
+    }));
+
+    return {
+        largeFormat,
+        width,
+        height,
+        fileSizeBytes: size,
+        ...exif,
+    };
+}
+
+// PXL_20260201_024449009.jpg
+const PIXEL_FILENAME_REGEX = /^PXL_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})\d+/;
+// photo_2026-02-05_18-47-48.jpg
+const TELEGRAM_FILENAME_REGEX = /^photo_(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})/;
+
+function inferDateFromFilename(filename: string): Date | undefined {
+    const basename = filename.split('/').pop() ?? filename;
+
+    let match = PIXEL_FILENAME_REGEX.exec(basename);
+    if (match) {
+        const [, year, month, day, hour, minute, second] = match;
+        const d = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
+        if (!isNaN(d.getTime())) return d;
+    }
+
+    match = TELEGRAM_FILENAME_REGEX.exec(basename);
+    if (match) {
+        const [, year, month, day, hour, minute, second] = match;
+        const d = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
+        if (!isNaN(d.getTime())) return d;
+    }
+
+    return undefined;
+}
+
+async function extractExif(imageBytes: Uint8Array): Promise<{
+    latitude?: number;
+    longitude?: number;
+    takenAt?: Date;
+}> {
+    try {
+        const { default: exifr } = await import('exifr');
+        const parsed = await exifr.parse(imageBytes, {
+            gps: true,
+            exif: true,
+            tiff: false,
+            ifd1: false,
+            interop: false,
+            translateKeys: true,
+            translateValues: true,
+        });
+        console.log('EXIF parsed:', parsed);
+        if (!parsed) return {};
+
+        return {
+            latitude: typeof parsed.latitude === 'number' ? parsed.latitude : undefined,
+            longitude: typeof parsed.longitude === 'number' ? parsed.longitude : undefined,
+            takenAt: parsed.DateTimeOriginal instanceof Date ? parsed.DateTimeOriginal : undefined,
+        };
+    } catch (error) {
+        console.log('Failed to parse EXIF data, skipping', error);
+        return {};
+    }
 }

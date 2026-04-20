@@ -31,3 +31,17 @@ create an image record in relational DB
 mark job as finished
 ```
 
+Use Job dynamodb record with type ProcessImage and payload
+
+```yaml
+mimeType: ...
+originalFilename: ...
+thumbKey: ...
+largeKey: ...
+originalKey: ...
+```
+and id === photo ID
+
+We also need an API, that will accept an uploading file meta (mimeType, original filename), validate it, issue photo ID and S3 keys, create a Job record and return the job ID and a signed upload URL 
+
+Also we need an API, that will fetch the multiple job's status by provided IDs. We will need it in UI later

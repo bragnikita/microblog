@@ -44,7 +44,7 @@ export const contents = pgTable('contents', {
   bodyFormat: varchar('body_format', { length: 16 }).notNull().default('json'),
   // JSON stored as text for DSQL compatibility
   bodyText: text('body_text').notNull(),
-
+  
   // App-level reference to photos.id — no FK for DSQL compatibility
   coverPhotoId: uuid('cover_photo_id'),
 

@@ -1,4 +1,15 @@
-export const CONTENT_URL_PREFIX = 'files'
-export const CONTENT_ORIGINAL_PREFIX = `${CONTENT_URL_PREFIX}/original/`
-export const CONTENT_MINIFIED_PREFIX = `${CONTENT_URL_PREFIX}/minified/`
-export const CONTENT_COMPRESSED_PREFIX = `${CONTENT_URL_PREFIX}/compressed/`
+export const IMAGES_ORIGINALS_PREFIX = 'files/images/originals/'
+export const IMAGES_DROP_PREFIX = 'files/images/drop/'
+export const IMAGES_PREFIX = 'files/images/'
+
+export function imageOriginalKey(photoId: string): string {
+    return `${IMAGES_ORIGINALS_PREFIX}${photoId}/original`
+}
+
+export function imageThumbKey(photoId: string): string {
+    return `${IMAGES_PREFIX}${photoId}/thumb.jpg`
+}
+
+export function imageLargeKey(photoId: string, format: string): string {
+    return `${IMAGES_PREFIX}${photoId}/large.${format}`
+}

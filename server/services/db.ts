@@ -38,7 +38,7 @@ export const Counters = new Entity({
     }
 }, { client: db, table: TableName })
 
-export enum ResourceJobStatus {
+export enum JobStatus {
     Waiting = 'waiting',
     Processing = 'processing',
     Completed = 'completed',
@@ -46,12 +46,12 @@ export enum ResourceJobStatus {
 }
 
 export enum ResourceJobType {
-    MinifyImage = 'minify-image',
+    ProcessImage = 'process-image',
 }
 
-export const ResourceJob = new Entity({
+export const Job = new Entity({
     model: {
-        entity: 'resource-job',
+        entity: 'job',
         version: '1',
         service: 'hajinomura-blog',
     }, attributes: {
@@ -60,7 +60,7 @@ export const ResourceJob = new Entity({
             required: true,
         },
         status: {
-            type: [ResourceJobStatus.Waiting, ResourceJobStatus.Processing, ResourceJobStatus.Completed, ResourceJobStatus.Failed] as const,
+            type: [JobStatus.Waiting, JobStatus.Processing, JobStatus.Completed, JobStatus.Failed] as const,
             required: true,
         },
         statusMessage: {
@@ -70,7 +70,7 @@ export const ResourceJob = new Entity({
             type: 'any',
         },
         type: {
-            type: [ResourceJobType.MinifyImage] as const,
+            type: [ResourceJobType.ProcessImage] as const,
             required: true,
         },
         createdAt: {
@@ -83,7 +83,7 @@ export const ResourceJob = new Entity({
             watch: ['status'],
             set: (value, other) => {
                 if (value) return value;
-                if (other.status === ResourceJobStatus.Completed || other.status === ResourceJobStatus.Failed) {
+                if (other.status === JobStatus.Completed || other.status === JobStatus.Failed) {
                     return DateTime.utc().toISO()
                 }
                 return undefined
@@ -117,12 +117,20 @@ export const Image = new Entity({
             type: 'string',
             required: true,
         },
+        originalFileName: {
+            type: 'string',
+            required: true,
+        },
+        mimeType: {
+            type: 'string',
+            required: true,
+        },
         resourceStatus: {
             type: ['pending', 'uploaded', 'deleted'] as const,
             required: true,
         },
         preprocessingStatus: {
-            type: [ResourceJobStatus.Waiting, ResourceJobStatus.Processing, ResourceJobStatus.Completed, ResourceJobStatus.Failed] as const,
+            type: [JobStatus.Waiting, JobStatus.Processing, JobStatus.Completed, JobStatus.Failed] as const,
         },
         createdAt: {
             type: 'string',

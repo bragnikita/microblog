@@ -49,20 +49,31 @@ export default $config({
       handler: "server/functions/image-processor.handler",
       name: `${$app.name}-${$app.stage}-image-processor`,
       timeout: '30 seconds',
-      link: [database, content],
+      link: [database, content, dsqlCluster],
       nodejs: {
-        install: ['sharp']
+        install: ['sharp', 'exifr']
+      },
+      environment: {
+        DSQL_ENDPOINT_NAME: process.env.DSQL_ENDPOINT_NAME || '',
       }
     })
     content.notify({
-      notifications: [{
-        name: 'Resizer',
-        function: resourceProcessor.arn,
-        filterPrefix: constants.CONTENT_ORIGINAL_PREFIX,
-        events: ['s3:ObjectCreated:*']
-      }]
+      notifications: [
+        {
+          name: 'Resizer',
+          function: resourceProcessor.arn,
+          filterPrefix: constants.IMAGES_ORIGINALS_PREFIX,
+          events: ['s3:ObjectCreated:*']
+        },
+        {
+          name: 'DropFolder',
+          function: resourceProcessor.arn,
+          filterPrefix: constants.IMAGES_DROP_PREFIX,
+          events: ['s3:ObjectCreated:*']
+        }
+      ]
     })
-    const prefix = `/${constants.CONTENT_URL_PREFIX}`
+    const prefix = `/${constants.IMAGES_PREFIX}`
     const cdn = new sst.aws.Router("main", {
       domain: APP_DOMAIN ? { name: APP_DOMAIN } : undefined,
     })

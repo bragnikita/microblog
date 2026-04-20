@@ -1,5 +1,5 @@
 import { testDsqlConnection, testLocalPgConnection } from "~~/server/services/dsql";
-import { getLocalDb, getDsqlDb } from "~~/server/db/index";
+import { useDb } from "~~/server/db/index";
 import { sql } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
       : await testDsqlConnection();
     isConOk = connResult.ok;
     // 2. Drizzle ORM test: insert → select → delete a row
-    const conn = import.meta.dev ? getLocalDb() : await getDsqlDb();
+    const conn = await useDb();
     const drizzleResult = await (async () => {
       try {
         const startedAt = Date.now();

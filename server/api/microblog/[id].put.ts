@@ -4,7 +4,7 @@ import { schema } from '~~/server/db'
 import { useDb, micropostBodySchema } from './_utils'
 
 export default defineWrappedResponseHandler(async (event) => {
-  const id = z.uuid().parse(getRouterParam(event, 'id'))
+  const id = z.string().uuid().parse(getRouterParam(event, 'id'))
   const { bodyText } = await readValidatedBody(event, micropostBodySchema.parse)
   const { db, cleanup } = await useDb()
   try {

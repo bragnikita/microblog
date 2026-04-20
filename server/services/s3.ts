@@ -1,49 +1,34 @@
 import { Resource } from "sst";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { DateTime } from "luxon";
-import { CONTENT_COMPRESSED_PREFIX, CONTENT_MINIFIED_PREFIX, CONTENT_ORIGINAL_PREFIX } from "#shared/constants";
-
-function randomString(length: number): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-}
+import { imageOriginalKey, imageLargeKey, imageThumbKey } from "#shared/constants";
 
 const s3 = new S3Client();
 
-export async function getMicroblogContentUploadUrl(originalFileName: string) {
-    const key = `${DateTime.utc().toISO({ suppressMilliseconds: true }).replaceAll(/[ZT\:\.\-]/g, '')}-${randomString(8)}`;
-    const s3Key = `${CONTENT_ORIGINAL_PREFIX}${key}`
+export async function getPhotoUploadUrl(photoId: string, mimeType: string): Promise<string> {
+    const s3Key = imageOriginalKey(photoId)
     const params = new PutObjectCommand({
         Bucket: Resource.content.name,
         Key: s3Key,
-        // Expires: DateTime.now().plus({ minutes: 5 }).toJSDate(),
+        ContentType: mimeType,
     })
-    return {key, s3Key , url: await getSignedUrl(s3, params)}
+    return getSignedUrl(s3, params, { expiresIn: 300 })
 }
 
 export const ImageResources = {
-    original(key: string) {
+    original(photoId: string): string {
         const base = new URL(Resource.main.url)
-        base.pathname = `${CONTENT_ORIGINAL_PREFIX}${key}`.replaceAll(/\/{2,}/g,'/')
+        base.pathname = `/${imageOriginalKey(photoId)}`
         return base.toString()
     },
-    thumbnail(key: string) {
+    thumbnail(photoId: string): string {
         const base = new URL(Resource.main.url)
-        base.pathname = `${CONTENT_MINIFIED_PREFIX}${key}`.replaceAll(/\/{2,}/g,'/')
+        base.pathname = `/${imageThumbKey(photoId)}`
         return base.toString()
     },
-    compressed(key: string) {
+    large(photoId: string, format: string): string {
         const base = new URL(Resource.main.url)
-        base.pathname = `${CONTENT_COMPRESSED_PREFIX}${key}`.replaceAll(/\/{2,}/g,'/')
+        base.pathname = `/${imageLargeKey(photoId, format)}`
         return base.toString()
     },
-    sizeStringToNumbers(sizeString: string) {
-        const [width, height] = sizeString.split('x').map(v => parseInt(v))
-        return {width, height}
-    }
 }
