@@ -9,3 +9,8 @@ export const uploadRequestSchema = z.object({
     mimeType: z.enum(ALLOWED_MIME_TYPES),
     originalFilename: z.string().nonempty(),
 })
+
+export const photosListQuerySchema = z.object({
+    limit: z.coerce.number().int().min(1).max(100).default(30),
+    cursor: z.string().uuid().optional(),
+})
