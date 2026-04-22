@@ -76,7 +76,7 @@ export const Job = new Entity({
         createdAt: {
             type: 'string',
             required: true,
-            set: (value) => value ?? DateTime.utc().toISO(),
+            default: () => DateTime.utc().toISO(),
         },
         finishedAt: {
             type: 'string',

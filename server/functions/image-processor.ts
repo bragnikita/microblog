@@ -50,6 +50,7 @@ export const handler = async (event: unknown) => {
         console.error('Could not process an event', error);
         return;
     }
+    console.log(`Received ${data.Records.length} S3 event records: `, data.Records.map(r => r.s3.object.key));
     for (const record of data.Records) {
         const decodedKey = decodeURIComponent(record.s3.object.key);
         console.log(`Processing event ${record.eventName} for ${record.s3.bucket.name}/${decodedKey}`);
@@ -196,7 +197,6 @@ async function processOriginalUpload(bucket: string, s3Key: string) {
 
 const THUMB_MAX_SIDE = 512;
 const LARGE_MAX_SIDE = 2048;
-const COMPRESSION_SIZE_THRESHOLD = 768 * 1024; // 768 kB
 
 async function generateDerivatives(
     bucket: string,
@@ -239,31 +239,19 @@ async function generateDerivatives(
         ContentType: 'image/jpeg',
     }));
 
-    // --- Large (WebP if oversized, otherwise copy original) ---
-    const needsCompression =
-        width > LARGE_MAX_SIDE || height > LARGE_MAX_SIDE || (size !== undefined && size > COMPRESSION_SIZE_THRESHOLD);
+    // --- Large (always WebP; resize only if dimensions exceed limit) ---
+    const needsResize = width > LARGE_MAX_SIDE || height > LARGE_MAX_SIDE;
 
-    // Derive extension from sharp format name ('jpeg' → 'jpg', others as-is)
-    const originalFormat = metadata.format ?? 'jpg';
-    const originalExt = originalFormat === 'jpeg' ? 'jpg' : originalFormat;
-
-    let largeFormat: string;
-    let largeBuffer: Uint8Array;
-    let largeContentType: string;
-
-    if (needsCompression) {
-        largeFormat = 'webp';
-        largeBuffer = await sharp(originalBytes)
-            .keepExif()
-            .resize(LARGE_MAX_SIDE, LARGE_MAX_SIDE, { fit: 'inside', withoutEnlargement: true })
-            .webp({ quality: 80 })
-            .toBuffer();
-        largeContentType = 'image/webp';
-    } else {
-        largeFormat = originalExt;
-        largeBuffer = originalBytes;
-        largeContentType = getResult.ContentType ?? payload.mimeType;
-    }
+    const largeFormat = 'webp';
+    const largeContentType = 'image/webp';
+    const largeBuffer = await sharp(originalBytes)
+        .keepExif()
+        .resize(needsResize ? LARGE_MAX_SIDE : undefined, needsResize ? LARGE_MAX_SIDE : undefined, {
+            fit: 'inside',
+            withoutEnlargement: true,
+        })
+        .webp({ quality: 80 })
+        .toBuffer();
 
     await s3Client.send(new PutObjectCommand({
         Bucket: bucket,
@@ -322,7 +310,6 @@ async function extractExif(imageBytes: Uint8Array): Promise<{
             translateKeys: true,
             translateValues: true,
         });
-        console.log('EXIF parsed:', parsed);
         if (!parsed) return {};
 
         return {
