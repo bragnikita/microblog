@@ -80,7 +80,7 @@ const mainMenu = ref(false);
   </div>
   <div :class="['grow mx-auto w-full relative', widthClass]">
     <div class="">
-      <div class="shadow-md bg-white md:rounded-md min-h-[200px]">
+      <div class="shadow-md bg-white md:rounded-md min-h-[200px] py-4 px-2">
         <div
         v-if="isDevMode()"
         class="flex justify-start items-center gap-2 p-2"
