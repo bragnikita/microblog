@@ -21,7 +21,7 @@
       >
         <p class="whitespace-pre-wrap">{{ post.bodyText }}</p>
         <div class="flex items-center justify-between mt-3 text-sm text-muted">
-          <span>{{ formatDate(post.publishedAt) }}</span>
+          <ClientOnly><span>{{ formatDate(post.publishedAt) }}</span></ClientOnly>
           <div v-if="loggedIn" class="flex gap-2">
             <UButton
               size="xs"

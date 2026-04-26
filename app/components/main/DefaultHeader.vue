@@ -25,17 +25,9 @@ async function logout() {
 const items = computed<NavigationMenuItem[]>(() => {
   const baseItems: NavigationMenuItem[][] = [
     [
-      {
-        label: "Microblog",
-        to: "/microblog",
-      },
-      { label: "Books", to: "/" },
-      { label: "Gallery", to: "/photos" },
-      { label: "About", to: "/" },
-      { label: 'Refresh session', onClick: async () => {
-        await fetchSession();
-        useToast().add({ title: "Session refreshed", color: "primary" });
-      } }
+      { label: "Microblog", to: "/microblog" },
+      { label: "Photos", to: "/photos/recent" },
+      { label: "Categories", to: "/categories" },
     ],
   ];
   if (isLoggedIn.value) {
