@@ -1,26 +1,15 @@
-import { eq, and } from 'drizzle-orm'
+import { eq, and, asc } from 'drizzle-orm'
 import { z } from 'zod'
 import { schema } from '~~/server/db'
-import { useDb, micropostUpdateSchema } from './_utils'
+import { ImageResources } from '~~/server/services/s3'
+import { useDb } from './_utils'
 
 export default defineWrappedResponseHandler(async (event) => {
   const id = z.string().uuid().parse(getRouterParam(event, 'id'))
-  const { content, images } = await readValidatedBody(event, micropostUpdateSchema.parse)
   const { db, cleanup } = await useDb()
   try {
     const [post] = await db
-      .update(schema.contents)
-      .set({
-        bodyText: content,
-        updatedAt: new Date(),
-      })
-      .where(
-        and(
-          eq(schema.contents.id, id),
-          eq(schema.contents.contentType, 'micropost'),
-        ),
-      )
-      .returning({
+      .select({
         id: schema.contents.id,
         slug: schema.contents.slug,
         bodyText: schema.contents.bodyText,
@@ -28,32 +17,41 @@ export default defineWrappedResponseHandler(async (event) => {
         createdAt: schema.contents.createdAt,
         updatedAt: schema.contents.updatedAt,
       })
+      .from(schema.contents)
+      .where(
+        and(
+          eq(schema.contents.id, id),
+          eq(schema.contents.contentType, 'micropost'),
+        ),
+      )
+      .limit(1)
 
     if (!post) {
       throw createError({ statusCode: 404, statusMessage: 'Post not found' })
     }
 
-    await db
-      .delete(schema.contentPhotos)
+    const attachments = await db
+      .select({
+        photoId: schema.contentPhotos.photoId,
+        sortOrder: schema.contentPhotos.sortOrder,
+      })
+      .from(schema.contentPhotos)
       .where(
         and(
           eq(schema.contentPhotos.contentId, id),
           eq(schema.contentPhotos.relationRole, 'attachment'),
         ),
       )
+      .orderBy(asc(schema.contentPhotos.sortOrder))
 
-    if (images.length > 0) {
-      await db.insert(schema.contentPhotos).values(
-        images.map((photoId, idx) => ({
-          contentId: id,
-          photoId,
-          relationRole: 'attachment',
-          sortOrder: idx,
-        })),
-      )
+    return {
+      ...post,
+      images: attachments.map(a => ({
+        id: a.photoId,
+        thumbnailUrl: ImageResources.thumbnail(a.photoId),
+        compressedUrl: ImageResources.large(a.photoId, 'webp'),
+      })),
     }
-
-    return post
   } finally {
     await cleanup()
   }

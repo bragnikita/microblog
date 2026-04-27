@@ -80,7 +80,7 @@ interface UploadItem {
 }
 
 const emit = defineEmits<{
-  (e: 'imageProcessed', photoId: string): void
+  (e: 'imageProcessed', photoId: string, previewUrl: string): void
 }>()
 
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -131,7 +131,7 @@ async function poll() {
 
       if (job.status === 'completed') {
         item.status = 'completed'
-        emit('imageProcessed', job.id)
+        emit('imageProcessed', job.id, item.previewUrl ?? '')
         const localId = item.localId
         setTimeout(() => removeItem(localId), 3000)
       }

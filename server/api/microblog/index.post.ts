@@ -1,8 +1,8 @@
 import { schema } from '~~/server/db'
-import { useDb, micropostBodySchema, generateSlug } from './_utils'
+import { useDb, micropostCreateSchema, generateSlug } from './_utils'
 
 export default defineWrappedResponseHandler(async (event) => {
-  const { bodyText } = await readValidatedBody(event, micropostBodySchema.parse)
+  const { content, images } = await readValidatedBody(event, micropostCreateSchema.parse)
   const { db, cleanup } = await useDb()
   try {
     const now = new Date()
@@ -14,7 +14,7 @@ export default defineWrappedResponseHandler(async (event) => {
         visibility: 'public',
         status: 'published',
         slug: generateSlug(),
-        bodyText,
+        bodyText: content,
         publishedAt: now,
       })
       .returning({
@@ -25,6 +25,21 @@ export default defineWrappedResponseHandler(async (event) => {
         createdAt: schema.contents.createdAt,
         updatedAt: schema.contents.updatedAt,
       })
+
+    if (!post) {
+      throw createError({ statusCode: 500, statusMessage: 'Failed to create post' })
+    }
+
+    if (images.length > 0) {
+      await db.insert(schema.contentPhotos).values(
+        images.map((photoId, idx) => ({
+          contentId: post.id,
+          photoId,
+          relationRole: 'attachment',
+          sortOrder: idx,
+        })),
+      )
+    }
 
     return post
   } finally {

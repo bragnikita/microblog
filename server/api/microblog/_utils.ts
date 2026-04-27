@@ -8,6 +8,16 @@ export const micropostBodySchema = z.object({
   bodyText: z.string().nonempty(),
 })
 
+export const micropostCreateSchema = z.object({
+  content: z.string().nonempty(),
+  images: z.array(z.string().uuid()).default([]),
+})
+
+export const micropostUpdateSchema = z.object({
+  content: z.string().nonempty(),
+  images: z.array(z.string().uuid()).default([]),
+})
+
 export function generateSlug(): string {
   return `micropost-${DateTime.now().toFormat('yyyyMMdd-HHmmss')}`
 }

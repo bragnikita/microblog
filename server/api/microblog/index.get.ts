@@ -1,5 +1,6 @@
-import { desc, eq, and } from 'drizzle-orm'
+import { desc, eq, and, inArray, asc } from 'drizzle-orm'
 import { schema } from '~~/server/db'
+import { ImageResources } from '~~/server/services/s3'
 import { useDb } from './_utils'
 
 export default defineWrappedResponseHandler(async () => {
@@ -24,7 +25,35 @@ export default defineWrappedResponseHandler(async () => {
       )
       .orderBy(desc(schema.contents.publishedAt))
 
-    return posts
+    if (posts.length === 0) return []
+
+    const postIds = posts.map(p => p.id)
+    const attachments = await db
+      .select({
+        contentId: schema.contentPhotos.contentId,
+        photoId: schema.contentPhotos.photoId,
+        sortOrder: schema.contentPhotos.sortOrder,
+      })
+      .from(schema.contentPhotos)
+      .where(
+        and(
+          inArray(schema.contentPhotos.contentId, postIds),
+          eq(schema.contentPhotos.relationRole, 'attachment'),
+        ),
+      )
+      .orderBy(asc(schema.contentPhotos.sortOrder))
+
+    const imagesByPost = new Map<string, { id: string; thumbnailUrl: string; compressedUrl: string }[]>()
+    for (const a of attachments) {
+      const list = imagesByPost.get(a.contentId) ?? []
+      list.push({ id: a.photoId, thumbnailUrl: ImageResources.thumbnail(a.photoId), compressedUrl: ImageResources.large(a.photoId, 'webp') })
+      imagesByPost.set(a.contentId, list)
+    }
+
+    return posts.map(p => ({
+      ...p,
+      images: imagesByPost.get(p.id) ?? [],
+    }))
   } finally {
     await cleanup()
   }
