@@ -1,11 +1,16 @@
 import { desc, eq, and, inArray, asc } from 'drizzle-orm'
+import { z } from 'zod'
 import { schema } from '~~/server/db'
 import { ImageResources } from '~~/server/services/s3'
 import { useDb } from './_utils'
 
+const PAGE_SIZE = 3
+
 export default defineWrappedResponseHandler(async (event) => {
   const session = await getUserSession(event)
   const isLoggedIn = !!session?.user
+  const query = getQuery(event)
+  const offset = z.coerce.number().int().min(0).default(0).parse(query.offset)
   const { db, cleanup } = await useDb()
   try {
     const whereConditions = [eq(schema.contents.contentType, 'micropost')]
@@ -28,8 +33,10 @@ export default defineWrappedResponseHandler(async (event) => {
       .from(schema.contents)
       .where(and(...whereConditions))
       .orderBy(desc(schema.contents.publishedAt))
+      .limit(PAGE_SIZE)
+      .offset(offset)
 
-    if (posts.length === 0) return []
+    if (posts.length === 0) return { posts: [], hasMore: false }
 
     const postIds = posts.map(p => p.id)
     const attachments = await db
@@ -54,10 +61,13 @@ export default defineWrappedResponseHandler(async (event) => {
       imagesByPost.set(a.contentId, list)
     }
 
-    return posts.map(p => ({
-      ...p,
-      images: imagesByPost.get(p.id) ?? [],
-    }))
+    return {
+      posts: posts.map(p => ({
+        ...p,
+        images: imagesByPost.get(p.id) ?? [],
+      })),
+      hasMore: posts.length === PAGE_SIZE,
+    }
   } finally {
     await cleanup()
   }

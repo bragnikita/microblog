@@ -22,11 +22,11 @@
       </div>
     </div>
 
-    <div v-if="status === 'pending'" class="rounded-[1.25rem] border border-[#ded6c4] bg-white/60 p-8 text-center text-[#727967]">
+    <div v-if="pending" class="rounded-[1.25rem] border border-[#ded6c4] bg-white/60 p-8 text-center text-[#727967]">
       Загружаем записи...
     </div>
 
-    <div v-else-if="!posts?.length" class="rounded-[1.25rem] border border-dashed border-[#b5c49a] bg-white/60 p-8 text-center text-[#727967]">
+    <div v-else-if="!posts.length" class="rounded-[1.25rem] border border-dashed border-[#b5c49a] bg-white/60 p-8 text-center text-[#727967]">
       Пока нет записей.
     </div>
 
@@ -37,6 +37,17 @@
         :post="post"
         @edit="openEdit"
         @delete="confirmDelete"
+      />
+    </div>
+
+    <div v-if="hasMore" class="mt-6 flex justify-center">
+      <UButton
+        label="Load more"
+        color="neutral"
+        variant="soft"
+        class="rounded-full"
+        :loading="loadMorePending"
+        @click="loadMore"
       />
     </div>
 
@@ -54,7 +65,40 @@ definePageMeta({
 const { loggedIn } = useUserSession()
 const toast = useToast()
 
-const { data: posts, status, refresh } = useFetch<MicroPost[]>('/api/microblog')
+const posts = ref<MicroPost[]>([])
+const hasMore = ref(false)
+const pending = ref(false)
+const loadMorePending = ref(false)
+
+async function fetchPage(offset: number) {
+  const data = await $fetch<{ posts: MicroPost[]; hasMore: boolean }>('/api/microblog', {
+    query: { offset },
+  })
+  return data
+}
+
+pending.value = true
+try {
+  const data = await fetchPage(0)
+  posts.value = data.posts
+  hasMore.value = data.hasMore
+} finally {
+  pending.value = false
+}
+
+async function loadMore() {
+  loadMorePending.value = true
+  try {
+    const data = await fetchPage(posts.value.length)
+    posts.value.push(...data.posts)
+    hasMore.value = data.hasMore
+  } catch (e: unknown) {
+    const err = e as { data?: { message?: string } }
+    toast.add({ title: err?.data?.message ?? 'Error loading posts', color: 'error' })
+  } finally {
+    loadMorePending.value = false
+  }
+}
 
 const formOpen = ref(false)
 const editingPost = ref<MicroPost | null>(null)
@@ -74,7 +118,9 @@ async function confirmDelete(post: MicroPost) {
   try {
     await $fetch(`/api/microblog/${post.id}`, { method: 'DELETE' })
     toast.add({ title: 'Post deleted', color: 'success' })
-    await refresh()
+    const data = await fetchPage(0)
+    posts.value = data.posts
+    hasMore.value = data.hasMore
   } catch (e: unknown) {
     const err = e as { data?: { message?: string } }
     toast.add({ title: err?.data?.message ?? 'Error deleting post', color: 'error' })
@@ -82,6 +128,8 @@ async function confirmDelete(post: MicroPost) {
 }
 
 async function onSaved() {
-  await refresh()
+  const data = await fetchPage(0)
+  posts.value = data.posts
+  hasMore.value = data.hasMore
 }
 </script>

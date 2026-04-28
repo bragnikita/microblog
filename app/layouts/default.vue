@@ -33,7 +33,7 @@ const contentStyle = computed(() => {
 })
 
 const title = 'Haji no Tabi'
-const description = 'Yet another personal microblog from one odd guy from Japan.'
+const description = 'Yet another blog from one odd guy from Japan.'
 
 const reqUrl = useRequestURL()
 useSeoMeta({
