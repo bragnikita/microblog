@@ -64,7 +64,7 @@ async function logout() {
 
 const heroMenuItems = [
   { label: 'Записи', to: '/microblog' },
-  { label: 'Фотоальбомы', to: '', disabled: true },
+  { label: 'Фотоальбомы', to: '/albums' },
   { label: 'Фоторепортажи', to: '', disabled: true },
   { label: 'Категории', to: '/categories' },
 ]
@@ -72,10 +72,18 @@ const heroMenuItems = [
 const primaryMenuItems = computed<NavigationMenuItem[][]>(() => [
   [
     { label: 'Microblog', icon: 'i-lucide-leaf', to: '/microblog' },
-    { label: 'Photoalbums', icon: 'i-lucide-images', disabled: true },
+    { label: 'Photoalbums', icon: 'i-lucide-images', to: '/albums' },
     { label: 'Photoreports', icon: 'i-lucide-map', disabled: true },
     { label: 'Categories', icon: 'i-lucide-tags', to: '/categories' },
   ],
+])
+
+const adminMenuItems = computed<NavigationMenuItem[]>(() => [
+  { label: 'Admin', icon: 'i-lucide-layout-dashboard', to: '/admin' },
+  { label: 'Categories editor', icon: 'i-lucide-tags', to: '/admin/categories' },
+  { label: 'Recent photos', icon: 'i-lucide-images', to: '/admin/photos/recent' },
+  { label: 'Drafts', icon: 'i-lucide-file-pen-line', to: '/admin/drafts' },
+  { label: 'Private posts', icon: 'i-lucide-lock', to: '/admin/private' },
 ])
 
 const drawerMenuItems = computed<NavigationMenuItem[][]>(() => {
@@ -84,6 +92,7 @@ const drawerMenuItems = computed<NavigationMenuItem[][]>(() => {
   ]
 
   if (isLoggedIn.value) {
+    items.push(adminMenuItems.value)
     items.push([
       {
         label: 'Logout',

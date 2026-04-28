@@ -11,12 +11,17 @@ export default defineWrappedResponseHandler(async (event) => {
   const isLoggedIn = !!session?.user
   const query = getQuery(event)
   const offset = z.coerce.number().int().min(0).default(0).parse(query.offset)
+  const filterStatus = z.enum(['published', 'draft', 'archived']).optional().parse(query.status || undefined)
+  const filterVisibility = z.enum(['public', 'private']).optional().parse(query.visibility || undefined)
   const { db, cleanup } = await useDb()
   try {
     const whereConditions = [eq(schema.contents.contentType, 'micropost')]
     if (!isLoggedIn) {
       whereConditions.push(eq(schema.contents.visibility, 'public'))
       whereConditions.push(eq(schema.contents.status, 'published'))
+    } else {
+      if (filterStatus) whereConditions.push(eq(schema.contents.status, filterStatus))
+      if (filterVisibility) whereConditions.push(eq(schema.contents.visibility, filterVisibility))
     }
 
     const posts = await db

@@ -115,8 +115,10 @@ function formatDate(date: string | null) {
 }
 
 async function copyPostLink() {
-  const url = new URL(window.location.href)
-  url.hash = postDomId.value
+  const slug = props.post.slug
+  const url = slug
+    ? new URL(`/content/${slug}`, window.location.origin)
+    : (() => { const u = new URL(window.location.href); u.hash = postDomId.value; return u })()
   try {
     await navigator.clipboard.writeText(url.toString())
     toast.add({ title: 'Ссылка скопирована', color: 'primary' })
