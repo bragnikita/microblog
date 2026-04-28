@@ -28,6 +28,15 @@
         <!-- Image uploader -->
         <PhotoUploader @image-processed="onImageProcessed" :tile-height="80"/>
 
+        <div class="flex flex-wrap gap-4">
+          <UFormField label="Visibility" name="visibility" class="flex-1">
+            <USelect v-model="form.visibility" :items="visibilityOptions" value-key="value" label-key="label" class="w-full" />
+          </UFormField>
+          <UFormField label="Status" name="status" class="flex-1">
+            <USelect v-model="form.status" :items="statusOptions" value-key="value" label-key="label" class="w-full" />
+          </UFormField>
+        </div>
+
         <div class="flex justify-end gap-2">
           <UButton color="neutral" variant="outline" label="Cancel" @click="isOpen = false" />
           <UButton type="submit" :loading="loading" label="Save" />
@@ -45,6 +54,8 @@ interface MicroPost {
   id: string
   slug: string | null
   bodyText: string
+  visibility?: 'public' | 'private'
+  status?: 'published' | 'draft' | 'archived'
   publishedAt: string | null
   createdAt: string
   updatedAt: string
@@ -67,10 +78,25 @@ const isOpen = defineModel<boolean>('open', { default: false })
 
 const formSchema = z.object({
   bodyText: z.string().nonempty('Text is required'),
+  visibility: z.enum(['public', 'private']),
+  status: z.enum(['published', 'draft', 'archived']),
 })
+
+const visibilityOptions = [
+  { value: 'public', label: 'Public' },
+  { value: 'private', label: 'Private' },
+]
+
+const statusOptions = [
+  { value: 'published', label: 'Published' },
+  { value: 'draft', label: 'Draft' },
+  { value: 'archived', label: 'Archived' },
+]
 
 const form = reactive({
   bodyText: '',
+  visibility: 'public' as 'public' | 'private',
+  status: 'published' as 'published' | 'draft' | 'archived',
 })
 
 const loading = ref(false)
@@ -87,6 +113,8 @@ watch(sortableParent, (el) => {
 watch(isOpen, async (val) => {
   if (val) {
     form.bodyText = props.post?.bodyText ?? ''
+    form.visibility = props.post?.visibility ?? 'public'
+    form.status = props.post?.status ?? 'published'
     attachedImages.value.splice(0)
     if (props.post) {
       try {
@@ -121,6 +149,8 @@ async function onSubmit() {
         body: {
           content: form.bodyText,
           images: attachedImages.value.map(img => img.id),
+          visibility: form.visibility,
+          status: form.status,
         },
       })
       toast.add({ title: 'Post updated', color: 'success' })
@@ -130,6 +160,8 @@ async function onSubmit() {
         body: {
           content: form.bodyText,
           images: attachedImages.value.map(img => img.id),
+          visibility: form.visibility,
+          status: form.status,
         },
       })
       toast.add({ title: 'Post created', color: 'success' })

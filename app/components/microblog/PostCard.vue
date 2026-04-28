@@ -8,6 +8,12 @@
         :label="post.visibility === 'private' ? 'Private' : 'Public'"
         :color="post.visibility === 'private' ? 'warning' : 'primary'"
         variant="soft"
+        class="rounded-full"
+      />
+      <UBadge
+        :label="post.status === 'draft' ? 'Draft' : post.status === 'archived' ? 'Archived' : 'Published'"
+        :color="post.status === 'draft' ? 'neutral' : post.status === 'archived' ? 'error' : 'success'"
+        variant="soft"
         class="mr-auto rounded-full"
       />
       <UButton
@@ -76,6 +82,7 @@ export interface MicroPost {
   createdAt: string
   updatedAt: string
   visibility?: 'public' | 'private'
+  status?: 'published' | 'draft' | 'archived'
   category?: {
     name: string
     slug: string

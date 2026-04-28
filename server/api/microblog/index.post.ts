@@ -2,25 +2,27 @@ import { schema } from '~~/server/db'
 import { useDb, micropostCreateSchema, generateSlug } from './_utils'
 
 export default defineWrappedResponseHandler(async (event) => {
-  const { content, images } = await readValidatedBody(event, micropostCreateSchema.parse)
+  const { content, images, visibility, status } = await readValidatedBody(event, micropostCreateSchema.parse)
   const { db, cleanup } = await useDb()
   try {
-    const now = new Date()
+    const publishedAt = status === 'published' ? new Date() : null
     const [post] = await db
       .insert(schema.contents)
       .values({
         contentType: 'micropost',
         bodyFormat: 'text',
-        visibility: 'public',
-        status: 'published',
+        visibility,
+        status,
         slug: generateSlug(),
         bodyText: content,
-        publishedAt: now,
+        publishedAt,
       })
       .returning({
         id: schema.contents.id,
         slug: schema.contents.slug,
         bodyText: schema.contents.bodyText,
+        visibility: schema.contents.visibility,
+        status: schema.contents.status,
         publishedAt: schema.contents.publishedAt,
         createdAt: schema.contents.createdAt,
         updatedAt: schema.contents.updatedAt,

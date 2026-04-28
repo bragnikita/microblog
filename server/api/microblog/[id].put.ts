@@ -5,13 +5,17 @@ import { useDb, micropostUpdateSchema } from './_utils'
 
 export default defineWrappedResponseHandler(async (event) => {
   const id = z.string().uuid().parse(getRouterParam(event, 'id'))
-  const { content, images } = await readValidatedBody(event, micropostUpdateSchema.parse)
+  const { content, images, visibility, status } = await readValidatedBody(event, micropostUpdateSchema.parse)
   const { db, cleanup } = await useDb()
   try {
+    const publishedAt = status === 'published' ? new Date() : null
     const [post] = await db
       .update(schema.contents)
       .set({
         bodyText: content,
+        visibility,
+        status,
+        publishedAt,
         updatedAt: new Date(),
       })
       .where(
@@ -24,6 +28,8 @@ export default defineWrappedResponseHandler(async (event) => {
         id: schema.contents.id,
         slug: schema.contents.slug,
         bodyText: schema.contents.bodyText,
+        visibility: schema.contents.visibility,
+        status: schema.contents.status,
         publishedAt: schema.contents.publishedAt,
         createdAt: schema.contents.createdAt,
         updatedAt: schema.contents.updatedAt,
