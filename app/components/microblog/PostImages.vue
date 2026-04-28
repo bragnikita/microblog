@@ -5,7 +5,7 @@
       <img
         :src="images[0].thumbnailUrl"
         :alt="`Image ${images[0].id}`"
-        class="w-full cursor-pointer rounded-lg object-cover max-h-37.5 sm:max-h-100"
+        class="w-full cursor-pointer rounded-lg object-cover aspect-4/3"
         loading="lazy"
         @click="openLightbox(0)"
       />
@@ -15,7 +15,7 @@
           :key="img.id"
           :src="img.thumbnailUrl"
           :alt="`Image ${img.id}`"
-          class="w-full h-full cursor-pointer rounded-lg object-cover max-h-37.5 sm:max-h-50"
+          class="w-full h-full cursor-pointer rounded-lg object-cover aspect-4/3"
           loading="lazy"
           @click="openLightbox(i + 1)"
         />
@@ -29,7 +29,7 @@
         :key="img.id"
         :src="img.thumbnailUrl"
         :alt="`Image ${img.id}`"
-        class="w-full h-full cursor-pointer rounded-lg object-cover max-h-37.5 sm:max-h-50"
+        class="w-full h-full cursor-pointer rounded-lg object-cover aspect-4/3"
         loading="lazy"
         @click="openLightbox(i)"
       />

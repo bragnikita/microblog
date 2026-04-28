@@ -20,7 +20,7 @@ export default defineWrappedResponseHandler(async (event) => {
       whereConditions.push(eq(schema.contents.visibility, 'public'))
       whereConditions.push(eq(schema.contents.status, 'published'))
     } else {
-      if (filterStatus) whereConditions.push(eq(schema.contents.status, filterStatus))
+      whereConditions.push(eq(schema.contents.status, filterStatus || 'published'))
       if (filterVisibility) whereConditions.push(eq(schema.contents.visibility, filterVisibility))
     }
 
