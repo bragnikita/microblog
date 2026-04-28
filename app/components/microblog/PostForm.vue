@@ -26,7 +26,7 @@
         </div>
 
         <!-- Image uploader -->
-        <PhotoUploader @image-processed="onImageProcessed" />
+        <PhotoUploader @image-processed="onImageProcessed" :tile-height="80"/>
 
         <div class="flex justify-end gap-2">
           <UButton color="neutral" variant="outline" label="Cancel" @click="isOpen = false" />

@@ -9,12 +9,15 @@
       @change="onFilesSelected"
     />
 
-    <div v-if="items.length > 0" class="flex flex-wrap gap-3">
+    <TransitionGroup v-if="items.length > 0" tag="div" name="tile" class="flex flex-wrap gap-3">
       <div
         v-for="item in items"
         :key="item.localId"
-        class="relative w-50 h-50 border border-gray-300 box-border flex items-center justify-center bg-center bg-no-repeat bg-cover bg-gray-100 overflow-visible"
-        :style="item.previewUrl ? { backgroundImage: `url('${item.previewUrl}')` } : {}"
+        class="relative border border-gray-300 box-border flex items-center justify-center bg-center bg-no-repeat bg-cover bg-gray-100 overflow-visible"
+        :style="[
+          item.previewUrl ? { backgroundImage: `url('${item.previewUrl}')` } : {},
+          { width: `${props.tileHeight}px`, height: `${props.tileHeight}px` },
+        ]"
       >
         <!-- Spinner overlay for active states -->
         <div
@@ -55,7 +58,7 @@
           </svg>
         </button>
       </div>
-    </div>
+    </TransitionGroup>
 
     <div
       class="w-full h-24 border-2 border-dashed border-gray-300 rounded flex items-center justify-center cursor-pointer hover:border-gray-500 transition-colors"
@@ -78,6 +81,14 @@ interface UploadItem {
   photoId?: string
   errorMessage?: string
 }
+
+const props = withDefaults(defineProps<{
+  tileHeight?: number
+  completedVisibleDuration?: number
+}>(), {
+  tileHeight: 200,
+  completedVisibleDuration: 3000,
+})
 
 const emit = defineEmits<{
   (e: 'imageProcessed', photoId: string, previewUrl: string): void
@@ -133,7 +144,7 @@ async function poll() {
         item.status = 'completed'
         emit('imageProcessed', job.id, item.previewUrl ?? '')
         const localId = item.localId
-        setTimeout(() => removeItem(localId), 3000)
+        setTimeout(() => removeItem(localId), props.completedVisibleDuration)
       }
       else if (job.status === 'failed') {
         item.status = 'failed'
@@ -221,3 +232,13 @@ onUnmounted(() => {
   stopPolling()
 })
 </script>
+
+<style scoped>
+.tile-leave-active {
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.tile-leave-to {
+  opacity: 0;
+  transform: scale(0.8);
+}
+</style>

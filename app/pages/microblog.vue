@@ -1,6 +1,6 @@
 <template>
   <section class="mx-auto max-w-3xl">
-    <div class="mb-5 rounded-[1.25rem] border border-[#ded6c4] bg-white/70 p-4 shadow-[0_10px_30px_rgba(80,72,54,0.07)] backdrop-blur md:p-5">
+    <div v-if="loggedIn" class="mb-5 rounded-[1.25rem] border border-[#ded6c4] bg-white/70 p-4 shadow-[0_10px_30px_rgba(80,72,54,0.07)] backdrop-blur md:p-5">
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p class="mb-1 font-sans text-xs font-bold uppercase tracking-[0.2em] text-[#3f6844]">
@@ -12,7 +12,6 @@
         </div>
 
         <UButton
-          v-if="loggedIn"
           label="New Post"
           icon="i-lucide-plus"
           color="primary"
