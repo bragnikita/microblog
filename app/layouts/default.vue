@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from '@nuxt/ui/runtime/components/NavigationMenu.vue.js'
 import { computed } from 'vue'
 
 const route = useRoute()
@@ -49,62 +48,19 @@ useSeoMeta({
   ogLocale: 'ru_RU',
 })
 
-const { clear, loggedIn } = useUserSession()
+const { loggedIn } = useUserSession()
 const isLoggedIn = computed(() =>
   typeof loggedIn === 'object' && 'value' in loggedIn
     ? loggedIn.value
     : Boolean(loggedIn),
 )
 
-async function logout() {
-  await clear()
-  await navigateTo('/')
-  useToast().add({ title: 'Logged out', color: 'primary' })
-}
-
 const heroMenuItems = [
-  { label: 'Записи', to: '/microblog' },
+  { label: 'Мимоходом', to: '/microblog' },
   { label: 'Фотоальбомы', to: '/albums' },
-  { label: 'Фоторепортажи', to: '', disabled: true },
+  // { label: 'По пути', to: '', disabled: true },
   { label: 'Категории', to: '/categories' },
 ]
-
-const primaryMenuItems = computed<NavigationMenuItem[][]>(() => [
-  [
-    { label: 'Microblog', icon: 'i-lucide-leaf', to: '/microblog' },
-    { label: 'Photoalbums', icon: 'i-lucide-images', to: '/albums' },
-    { label: 'Photoreports', icon: 'i-lucide-map', disabled: true },
-    { label: 'Categories', icon: 'i-lucide-tags', to: '/categories' },
-  ],
-])
-
-const adminMenuItems = computed<NavigationMenuItem[]>(() => [
-  { label: 'Admin', icon: 'i-lucide-layout-dashboard', to: '/admin' },
-  { label: 'Categories editor', icon: 'i-lucide-tags', to: '/admin/categories' },
-  { label: 'Recent photos', icon: 'i-lucide-images', to: '/admin/photos/recent' },
-  { label: 'Drafts', icon: 'i-lucide-file-pen-line', to: '/admin/drafts' },
-  { label: 'Private posts', icon: 'i-lucide-lock', to: '/admin/private' },
-])
-
-const drawerMenuItems = computed<NavigationMenuItem[][]>(() => {
-  const items: NavigationMenuItem[][] = [
-    ...primaryMenuItems.value,
-  ]
-
-  if (isLoggedIn.value) {
-    items.push(adminMenuItems.value)
-    items.push([
-      {
-        label: 'Logout',
-        icon: 'i-lucide-log-out',
-        class: 'text-error font-semibold',
-        onSelect: logout,
-      },
-    ])
-  }
-
-  return items
-})
 
 function isActiveHeroItem(to: string) {
   return Boolean(to) && (route.path === to || route.path.startsWith(`${to}/`))
@@ -113,54 +69,28 @@ function isActiveHeroItem(to: string) {
 
 <template>
   <UMain class="min-h-screen bg-[#fbfaf4] text-[#273026]">
-    <UHeader
-    v-if="isLoggedIn"
-      mode="drawer"
-      toggle-side="right"
-      class="!fixed inset-x-0 top-0 z-50 border-b border-[#ded6c4]/70 bg-[#fbfaf4]/70 shadow-none backdrop-blur-md"
-      :toggle="{
-        color: 'neutral',
-        variant: 'soft',
-        size: 'lg',
-        class: 'rounded-2xl border border-[#3f6844]/15 bg-white/55 text-[#273026] shadow-none',
-      }"
-
-    >
-      <template #left>
-        <NuxtLink
-          to="/"
-          class="font-serif text-base text-[#273026]/70 no-underline"
-        >
-          Haji no Tabi
-        </NuxtLink>
-      </template>
-
-      <template #body>
-        <UNavigationMenu
-          :items="drawerMenuItems"
-          orientation="vertical"
-          class="w-full"
-        />
-      </template>
-    </UHeader>
+    <MainAdminHeader />
 
     <div class="min-h-screen bg-[radial-gradient(circle_at_16%_12%,rgba(233,184,170,0.28),transparent_28rem),radial-gradient(circle_at_86%_4%,rgba(199,220,224,0.56),transparent_24rem),linear-gradient(110deg,#f8f5ea_0%,#fbfaf4_46%,#eef3e6_100%)]">
       <header class="relative overflow-hidden border-b border-[#ded6c4] bg-white/35">
-        <div class="relative grid min-h-[260px] items-end overflow-hidden bg-[linear-gradient(90deg,rgba(39,48,38,0.74),rgba(39,48,38,0.22)_46%,rgba(251,250,244,0.5)),url('/top-image.jpg')] bg-cover bg-center p-6 pt-20 md:min-h-[430px] md:items-start md:p-9 md:pt-20">
+        <div class="relative grid min-h-[260px] items-end overflow-hidden bg-[linear-gradient(90deg,rgba(39,48,38,0.74),rgba(39,48,38,0.22)_46%,rgba(251,250,244,0.5)),url('/top-image.jpg')] bg-cover bg-center p-6 pt-10 md:min-h-[430px] md:items-start md:p-9 md:pt-15">
           <div class="relative z-10 mx-auto grid w-full max-w-6xl gap-6 md:grid-cols-[minmax(0,1fr)_minmax(280px,360px)] md:items-start">
             <div class="grid justify-items-start gap-5">
-              <!-- <NuxtLink
+              <NuxtLink
                 to="/"
                 class="flex w-fit items-center gap-2 rounded-3xl border border-white/30 bg-[#161f15]/45 px-4 py-3 text-white no-underline shadow-2xl shadow-black/15 md:px-5 md:py-4"
                 aria-label="На главную"
               >
-                <span class="text-2xl leading-[0.99] md:text-5xl lg:text-6xl text-right">Hajiの</span>
-                <span class="text-4xl uppercase tracking-[0.08em] md:text-4xl lg:text-5xl">旅</span>
-              </NuxtLink> -->
+              <div>
+                <div class="text-2xl leading-[0.99] md:text-5xl lg:text-6xl text-left">Haji</div>
+                <div class="text-2xl leading-[0.99] md:text-3xl lg:text-4xl text-left">の</div>
+              </div>
+                <div class="text-5xl uppercase tracking-[0.08em] md:text-6xl lg:text-8xl">旅</div>
+              </NuxtLink>
 
               <div class="max-w-xl text-[#fffdf3] drop-shadow-[0_2px_20px_rgba(0,0,0,0.35)] md:max-w-[460px]">
                 <p class="mb-2 font-sans text-xs font-bold uppercase tracking-[0.22em] text-white/75 md:text-[11px]">
-                  личные заметки
+                  haji no tabi
                 </p>
                 <h1 class="max-w-[12ch] text-4xl font-medium leading-[0.95] md:max-w-none md:text-4xl lg:text-5xl">
                   Тихий микроблог о тропах, цветах и свете
@@ -183,7 +113,7 @@ function isActiveHeroItem(to: string) {
                   <NuxtLink
                     v-else
                     :to="item.to"
-                    class="block rounded-full bg-[#5f6254]/60 px-7 py-3 text-center font-serif text-lg font-semibold text-[#fffdf3] no-underline shadow-lg shadow-black/10 backdrop-blur-md transition hover:bg-[#5f6254]/75"
+                    class="block rounded-full bg-[#5f6254]/20 px-7 py-3 text-center font-serif text-lg font-semibold text-[#fffdf3] no-underline shadow-lg shadow-black/10 backdrop-blur-md backdrop-opacity-75 transition hover:bg-[#5f6254]/75"
                   >
                     {{ item.label }}
                   </NuxtLink>

@@ -1,9 +1,25 @@
 <script setup lang="ts">
+import type { MicroPost } from '~/components/microblog/PostCard.vue'
+
 definePageMeta({ middleware: 'authenticated' })
 
-const { data, pending } = await useFetch('/api/microblog', {
+const { data, pending } = await useFetch<{ posts: MicroPost[] }>('/api/microblog', {
   query: { visibility: 'private' },
 })
+
+const posts = computed({
+  get: () => data.value?.posts ?? [],
+  set: (val) => { if (data.value) data.value.posts = val },
+})
+
+function onUpdated(post: MicroPost) {
+  const idx = posts.value.findIndex(p => p.id === post.id)
+  if (idx !== -1) posts.value.splice(idx, 1, post)
+}
+
+function onDeleted(id: string) {
+  posts.value = posts.value.filter(p => p.id !== id)
+}
 </script>
 
 <template>
@@ -30,10 +46,12 @@ const { data, pending } = await useFetch('/api/microblog', {
     </div>
 
     <div v-else class="space-y-4">
-      <MicroblogPostCard
-        v-for="post in data.posts"
+      <MicroblogEditablePost
+        v-for="post in posts"
         :key="post.id"
         :post="post"
+        @updated="onUpdated"
+        @deleted="onDeleted"
       />
     </div>
   </section>

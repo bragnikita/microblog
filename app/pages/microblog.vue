@@ -11,14 +11,7 @@
           </h2>
         </div>
 
-        <UButton
-          label="New Post"
-          icon="i-lucide-plus"
-          color="primary"
-          variant="soft"
-          class="rounded-full"
-          @click="openNew"
-        />
+        <MicroblogNewPostButton @created="onCreated" />
       </div>
     </div>
 
@@ -31,27 +24,27 @@
     </div>
 
     <div v-else class="space-y-4">
-      <MicroblogPostCard
+      <MicroblogEditablePost
         v-for="post in posts"
         :key="post.id"
         :post="post"
-        @edit="openEdit"
-        @delete="confirmDelete"
+        @updated="onUpdated"
+        @deleted="onDeleted"
       />
     </div>
 
     <div v-if="hasMore" class="mt-6 flex justify-center">
       <UButton
-        label="Load more"
-        color="neutral"
+        label="Загрузить ещё"
+        color="primary"
         variant="soft"
-        class="rounded-full"
+        size="xl"
+        class="rounded-full flex items-center"
         :loading="loadMorePending"
         @click="loadMore"
       />
     </div>
 
-    <MicroblogPostForm v-model:open="formOpen" :post="editingPost" @saved="onSaved" />
   </section>
 </template>
 
@@ -100,36 +93,16 @@ async function loadMore() {
   }
 }
 
-const formOpen = ref(false)
-const editingPost = ref<MicroPost | null>(null)
-
-function openNew() {
-  editingPost.value = null
-  formOpen.value = true
+function onCreated(post: MicroPost) {
+  posts.value.unshift(post)
 }
 
-function openEdit(post: MicroPost) {
-  editingPost.value = post
-  formOpen.value = true
+function onUpdated(post: MicroPost) {
+  const idx = posts.value.findIndex(p => p.id === post.id)
+  if (idx !== -1) posts.value.splice(idx, 1, post)
 }
 
-async function confirmDelete(post: MicroPost) {
-  if (!confirm('Delete this post?')) return
-  try {
-    await $fetch(`/api/microblog/${post.id}`, { method: 'DELETE' })
-    toast.add({ title: 'Post deleted', color: 'success' })
-    const data = await fetchPage(0)
-    posts.value = data.posts
-    hasMore.value = data.hasMore
-  } catch (e: unknown) {
-    const err = e as { data?: { message?: string } }
-    toast.add({ title: err?.data?.message ?? 'Error deleting post', color: 'error' })
-  }
-}
-
-async function onSaved() {
-  const data = await fetchPage(0)
-  posts.value = data.posts
-  hasMore.value = data.hasMore
+function onDeleted(id: string) {
+  posts.value = posts.value.filter(p => p.id !== id)
 }
 </script>

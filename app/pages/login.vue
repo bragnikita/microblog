@@ -17,7 +17,7 @@
                 <div>
                     <a @click.prevent="onClearCache" class="text-sm cursor-pointer">Clear Cache</a>
                 </div>
-                </div>4
+                </div>
         </UForm>
     </div>
 </template>

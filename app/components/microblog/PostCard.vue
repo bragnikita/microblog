@@ -8,13 +8,7 @@
         :label="post.visibility === 'private' ? 'Private' : 'Public'"
         :color="post.visibility === 'private' ? 'warning' : 'primary'"
         variant="soft"
-        class="rounded-full"
-      />
-      <UBadge
-        :label="post.status === 'draft' ? 'Draft' : post.status === 'archived' ? 'Archived' : 'Published'"
-        :color="post.status === 'draft' ? 'neutral' : post.status === 'archived' ? 'error' : 'success'"
-        variant="soft"
-        class="mr-auto rounded-full"
+        class="rounded-full mr-auto"
       />
       <UButton
         size="xs"
@@ -30,7 +24,7 @@
         variant="soft"
         color="error"
         icon="i-lucide-trash-2"
-        label="Delete"
+        
         class="rounded-full"
         @click="emit('delete', post)"
       />

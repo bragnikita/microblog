@@ -15,6 +15,9 @@ export default defineNuxtConfig({
     'nuxt-auth-utils',
     '@vueuse/nuxt'
   ],
+  routeRules: {
+    '/admin': { appLayout: 'clear' },
+  },
   vite: {
     server: {
       allowedHosts: ['.local', '.localhost', '.ngrok-free.app', '.ngrok.dev'],
