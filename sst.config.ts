@@ -20,7 +20,7 @@ export default $config({
   async run() {
     const constants = await import('./shared/constants')
     const dsqlCluster = sst.aws.Dsql.get("dsql", {
-      id: "zvtufeseilumw2xggeyzvth4na",
+      id: process.env.DSQL_ENDPOINT_NAME || '',
     },)
 
     const database = new sst.aws.Dynamo('database', {
