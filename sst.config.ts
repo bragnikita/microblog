@@ -19,6 +19,10 @@ export default $config({
   },
   async run() {
     const constants = await import('./shared/constants')
+    if (!APP_DOMAIN) {
+      throw new Error("APP_DOMAIN environment variable is required")
+    }
+
     const dsqlCluster = sst.aws.Dsql.get("dsql", {
       id: process.env.DSQL_ENDPOINT_NAME || '',
     },)
@@ -75,15 +79,15 @@ export default $config({
     })
     const prefix = `/${constants.IMAGES_PREFIX}`
     const cdn = new sst.aws.Router("main", {
-      domain: APP_DOMAIN ? { name: APP_DOMAIN } : undefined,
+      domain: { name: APP_DOMAIN },      
     })
-    cdn.routeBucket(prefix, content);
+    cdn.routeBucket(`${APP_DOMAIN}${prefix}`, content);
 
     const site = new sst.aws.Nuxt("web", {
       link: [database, content, cdn, dsqlCluster],
       router: {
         instance: cdn,
-        domain: APP_DOMAIN || undefined
+        domain: APP_DOMAIN
       },
       environment: {
         FAST_ACCESS_KEY: process.env.FAST_ACCESS_KEY || '',
