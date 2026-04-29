@@ -41,6 +41,7 @@ export async function getDsqlDb(): Promise<DbConnection> {
     host: `${process.env.DSQL_ENDPOINT_NAME}.dsql.ap-northeast-1.on.aws`,
     user: 'admin',
     database: 'postgres',
+    profile: process.env.CI ? undefined : 'private', // Use AWS profile in local dev, but not in CI (where credentials are provided via env vars)
     connectionTimeoutMillis: 5000,
   });
   await client.connect();

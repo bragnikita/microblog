@@ -89,6 +89,7 @@ export default $config({
         FAST_ACCESS_KEY: process.env.FAST_ACCESS_KEY || '',
         NUXT_SESSION_PASSWORD: process.env.NUXT_SESSION_PASSWORD || '',
         SITE_URL: APP_DOMAIN ? `https://${APP_DOMAIN}` : cdn.url,
+        DSQL_ENDPOINT_NAME: process.env.DSQL_ENDPOINT_NAME || '',
       },
       transform: {
         server: {

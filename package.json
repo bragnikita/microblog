@@ -22,6 +22,8 @@
     "sst:unlock": "sst unlock",
     "sst:deploy": "sst deploy",
     "sst:cmd": "sst dev --",
+    "sst:refresh": "sst refresh",
+    "sst:remove": "sst remove",
     "app:migrate": "tsx migration.ts",
     "cleanup": "rm -rf .nuxt dist .sst cdk.out node_modules .turbo",
     "cleanstart": "pnpm run cleanup && pnpm install && pnpm run sst:dev --stage dev",
